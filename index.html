@@ -1,863 +1,537 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>高校2年レベル 英単語マスター (High School Vocab Master)</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'Noto Sans JP', 'sans-serif'],
-                    },
-                    colors: {
-                        brand: {
-                            50: '#f0f9ff',
-                            100: '#e0f2fe',
-                            500: '#0284c7',
-                            600: '#0284c7',
-                            700: '#0369a1',
-                            800: '#075985',
-                        }
-                    },
-                    keyframes: {
-                        fadeIn: {
-                            '0%': { opacity: '0', transform: 'scale(0.95)' },
-                            '100%': { opacity: '1', transform: 'scale(1)' },
-                        },
-                        pulseGlow: {
-                            '0%, 100%': { opacity: '1' },
-                            '50%': { opacity: '0.6' },
-                        }
-                    },
-                    animation: {
-                        fadeIn: 'fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards',
-                        pulseGlow: 'pulseGlow 2s infinite ease-in-out',
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        /* カスタムスクロールバー & グラデーション背景アニメーション */
-        body {
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
-            min-height: 100vh;
-        }
-        .glass-card {
-            background: rgba(30, 41, 59, 0.7);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        .glass-card-light {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>英単語マスター - 中1〜高3対応</title>
+  <style>
+    :root {
+      --primary: #4f46e5;
+      --primary-hover: #4338ca;
+      --bg-color: #f3f4f6;
+      --card-bg: #ffffff;
+      --text-color: #1f2937;
+      --accent-green: #10b981;
+      --accent-red: #ef4444;
+      --accent-yellow: #f59e0b;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .app-container {
+      background: var(--card-bg);
+      width: 100%;
+      max-width: 500px;
+      border-radius: 20px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      padding: 25px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid #f3f4f6;
+      padding-bottom: 15px;
+    }
+
+    h1 {
+      font-size: 1.2rem;
+      color: var(--primary);
+      font-weight: 700;
+    }
+
+    .level-select {
+      padding: 6px 12px;
+      border-radius: 12px;
+      border: 2px solid var(--primary);
+      background: white;
+      color: var(--primary);
+      font-weight: bold;
+      cursor: pointer;
+      outline: none;
+    }
+
+    .stats-bar {
+      display: flex;
+      justify-content: space-around;
+      background: #eef2ff;
+      padding: 10px;
+      border-radius: 12px;
+      font-weight: bold;
+      color: #3730a3;
+      font-size: 0.9rem;
+    }
+
+    .word-card {
+      text-align: center;
+      padding: 20px 0;
+    }
+
+    .word-title {
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: #111827;
+      letter-spacing: 1px;
+    }
+
+    .hint-container {
+      height: 140px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background: #fafafa;
+      border-radius: 16px;
+      border: 2px dashed #e5e7eb;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hint-timer-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .timer-circle {
+      position: relative;
+      width: 50px;
+      height: 50px;
+    }
+
+    .timer-circle svg {
+      width: 50px;
+      height: 50px;
+      transform: rotate(-90deg);
+    }
+
+    .timer-circle circle {
+      fill: none;
+      stroke-width: 5;
+      stroke-linecap: round;
+    }
+
+    .bg-circle {
+      stroke: #e5e7eb;
+    }
+
+    .progress-circle {
+      stroke: var(--primary);
+      stroke-dasharray: 126;
+      stroke-dashoffset: 0;
+      transition: stroke-dashoffset 1s linear;
+    }
+
+    .timer-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-weight: bold;
+      font-size: 0.9rem;
+      color: var(--primary);
+    }
+
+    .hint-text-label {
+      font-size: 0.85rem;
+      color: #6b7280;
+      font-weight: 600;
+    }
+
+    .hint-content {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    @keyframes popIn {
+      0% { opacity: 0; transform: scale(0.7); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+
+    .hint-icon {
+      width: 80px;
+      height: 80px;
+    }
+
+    .hint-caption {
+      margin-top: 5px;
+      font-size: 0.8rem;
+      color: #4b5563;
+      background: #ffffff;
+      padding: 2px 8px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .options-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .option-btn {
+      background: white;
+      border: 2px solid #e5e7eb;
+      padding: 14px;
+      border-radius: 14px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #374151;
+      cursor: pointer;
+      transition: all 0.2s;
+      outline: none;
+    }
+
+    .option-btn:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+      background: #f8fafc;
+    }
+
+    .option-btn.correct {
+      background: var(--accent-green) !important;
+      color: white !important;
+      border-color: var(--accent-green) !important;
+    }
+
+    .option-btn.wrong {
+      background: var(--accent-red) !important;
+      color: white !important;
+      border-color: var(--accent-red) !important;
+    }
+
+    .controls {
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn-next {
+      flex: 1;
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 14px;
+      border-radius: 14px;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      display: none;
+      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+    }
+
+    .btn-next:hover {
+      background: var(--primary-hover);
+    }
+  </style>
 </head>
-<body class="text-slate-100 font-sans antialiased selection:bg-sky-500 selection:text-white flex flex-col justify-between min-h-screen">
-
-    <!-- ヘッダー / アプリ状態バー -->
-    <header class="w-full max-w-4xl mx-auto px-4 pt-6 pb-2">
-        <div class="flex justify-between items-center glass-card rounded-2xl px-5 py-3 shadow-lg">
-            <div class="flex items-center space-x-3">
-                <div class="bg-gradient-to-tr from-sky-400 to-indigo-500 p-2.5 rounded-xl shadow-md text-white font-black text-lg">
-                    Vocab
-                </div>
-                <div>
-                    <h1 class="font-bold text-lg leading-tight tracking-wide text-white">高校2年 英単語マスター</h1>
-                    <p class="text-xs text-slate-400">英検2級〜準1級 / 大学入試レベル</p>
-                </div>
-            </div>
-
-            <div class="flex items-center space-x-2 sm:space-x-4">
-                <!-- モード切替ボタン -->
-                <button id="nav-quiz-btn" onclick="switchMode('quiz')" class="px-3 py-1.5 rounded-lg text-sm font-semibold transition-all bg-sky-500 text-white shadow-sm hover:bg-sky-400">
-                    テスト
-                </button>
-                <button id="nav-dict-btn" onclick="switchMode('dict')" class="px-3 py-1.5 rounded-lg text-sm font-semibold transition-all text-slate-300 hover:text-white hover:bg-slate-700/50">
-                    単語帳
-                </button>
-
-                <!-- サウンド トグル -->
-                <button id="sound-toggle-btn" onclick="toggleSound()" class="p-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-700/50 transition-all flex items-center justify-center" title="効果音 ON/OFF">
-                    <svg id="sound-icon-on" class="w-5 h-5 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path></svg>
-                    <svg id="sound-icon-off" class="w-5 h-5 text-slate-500 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15zM17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"></path></svg>
-                </button>
-            </div>
-        </div>
-    </header>
-
-    <!-- メインコンテンツエリア -->
-    <main class="w-full max-w-4xl mx-auto px-4 py-4 flex-grow flex flex-col justify-center">
-
-        <!-- 1. クイズモード画面 -->
-        <section id="quiz-screen" class="space-y-4">
-            
-            <!-- 進捗 & ストリーク情報 -->
-            <div class="flex justify-between items-center text-sm font-medium px-2">
-                <div class="flex items-center space-x-2">
-                    <span id="question-number" class="text-sky-400 font-bold">第 1 / 10 問</span>
-                    <span class="text-slate-500">|</span>
-                    <span id="streak-counter" class="text-amber-400 font-semibold flex items-center gap-1">
-                        🔥 <span id="streak-count">0</span> 連続正解
-                    </span>
-                </div>
-                <div class="flex items-center space-x-4">
-                    <span id="timer-display" class="font-mono text-slate-300">⏱ 00:00</span>
-                    <span id="score-display" class="text-emerald-400 font-bold">Score: 0</span>
-                </div>
-            </div>
-
-            <!-- プログレスバー -->
-            <div class="w-full bg-slate-800 rounded-full h-2 overflow-hidden shadow-inner">
-                <div id="progress-bar" class="bg-gradient-to-r from-sky-400 to-indigo-500 h-2 rounded-full transition-all duration-300" style="width: 10%;"></div>
-            </div>
-
-            <!-- クイズメインカード -->
-            <div class="glass-card rounded-3xl p-6 sm:p-8 shadow-2xl relative overflow-hidden">
-                
-                <!-- 問題の英単語と発音 -->
-                <div class="text-center space-y-2 mb-6">
-                    <span id="word-category" class="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-sky-500/10 text-sky-400 border border-sky-500/20">
-                        動詞 / 優先する
-                    </span>
-                    <h2 id="target-word" class="text-4xl sm:text-5xl font-extrabold tracking-tight text-white py-2">
-                        priority
-                    </h2>
-                    <p id="phonetic-symbol" class="text-sm font-mono text-slate-400">/ praɪˈɔːrəti /</p>
-                </div>
-
-                <!-- イラストヒント & テキストヒント コンテナ -->
-                <div id="hint-container" class="my-6 min-h-[160px] flex flex-col items-center justify-center relative">
-                    <!-- ヒント読み込み中 / 出現タイマー表示 -->
-                    <div id="hint-loader" class="flex flex-col items-center space-y-2 text-slate-400 transition-opacity duration-300">
-                        <div class="w-10 h-10 rounded-full border-2 border-sky-500/20 border-t-sky-400 animate-spin"></div>
-                        <p class="text-xs animate-pulseGlow" id="hint-timer-text">💡 3秒後に画像ヒントが表示されます...</p>
-                    </div>
-
-                    <!-- 浮き出る絵のヒント (表示時アニメーション) -->
-                    <div id="hint-content" class="hidden flex flex-col items-center animate-fadeIn">
-                        <div id="svg-illustration-wrapper" class="w-28 h-28 sm:w-32 sm:h-32 bg-slate-800/80 rounded-2xl p-3 shadow-inner border border-slate-700/50 flex items-center justify-center">
-                            <!-- ここに動的SVGが注入される -->
-                        </div>
-                        <div id="text-hint-box" class="mt-2 text-xs font-medium text-amber-300/90 bg-amber-500/10 px-3 py-1 rounded-full border border-amber-500/20">
-                            ヒント: 最初の文字は「p」
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 選択肢ボタンリスト (2×2 グリッド) -->
-                <div id="options-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mt-6">
-                    <!-- 4つの選択肢ボタンはJSで作成 -->
-                </div>
-
-                <!-- 次へ進むボタン (回答後に表示) -->
-                <div id="next-btn-container" class="mt-6 flex justify-end hidden">
-                    <button id="next-question-btn" onclick="nextQuestion()" class="w-full sm:w-auto px-8 py-3 bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white font-bold rounded-xl shadow-lg hover:shadow-sky-500/20 transition-all flex items-center justify-center gap-2">
-                        <span>次の問題へ</span>
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path></svg>
-                    </button>
-                </div>
-
-            </div>
-
-        </section>
-
-        <!-- 2. 結果発表画面 -->
-        <section id="result-screen" class="hidden space-y-6 animate-fadeIn">
-            <div class="glass-card rounded-3xl p-6 sm:p-8 text-center shadow-2xl relative overflow-hidden">
-                <div class="inline-flex p-4 rounded-full bg-sky-500/10 border border-sky-500/20 mb-4">
-                    <span class="text-4xl">🎉</span>
-                </div>
-                <h2 class="text-3xl font-extrabold text-white mb-2">テスト終了！</h2>
-                <p class="text-slate-400 text-sm">お疲れ様でした。今回の結果を確認しましょう。</p>
-
-                <!-- スコアサマリー -->
-                <div class="grid grid-cols-3 gap-3 my-6">
-                    <div class="glass-card-light p-4 rounded-2xl">
-                        <p class="text-xs text-slate-400 mb-1">正答率</p>
-                        <p id="result-accuracy" class="text-2xl sm:text-3xl font-black text-sky-400">80%</p>
-                    </div>
-                    <div class="glass-card-light p-4 rounded-2xl">
-                        <p class="text-xs text-slate-400 mb-1">正解数</p>
-                        <p id="result-score" class="text-2xl sm:text-3xl font-black text-emerald-400">8 / 10</p>
-                    </div>
-                    <div class="glass-card-light p-4 rounded-2xl">
-                        <p class="text-xs text-slate-400 mb-1">最大連続正解</p>
-                        <p id="result-max-streak" class="text-2xl sm:text-3xl font-black text-amber-400">5</p>
-                    </div>
-                </div>
-
-                <!-- 復習リスト -->
-                <div class="text-left mt-6">
-                    <h3 class="text-md font-bold text-slate-200 mb-3 flex items-center gap-2">
-                        <span>📝 単語の復習リスト</span>
-                    </h3>
-                    <div id="review-list" class="space-y-2 max-h-60 overflow-y-auto pr-2">
-                        <!-- 動的生成 -->
-                    </div>
-                </div>
-
-                <!-- 再挑戦 / モード変更ボタン -->
-                <div class="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
-                    <button onclick="restartQuiz()" class="px-6 py-3 bg-sky-500 hover:bg-sky-400 text-white font-bold rounded-xl shadow-lg transition-all flex items-center justify-center gap-2">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                        もう一度挑戦する
-                    </button>
-                    <button onclick="switchMode('dict')" class="px-6 py-3 bg-slate-700 hover:bg-slate-600 text-slate-200 font-bold rounded-xl transition-all">
-                        単語帳で復習する
-                    </button>
-                </div>
-            </div>
-        </section>
-
-        <!-- 3. 単語帳・辞書モード画面 -->
-        <section id="dict-screen" class="hidden space-y-4 animate-fadeIn">
-            <div class="flex justify-between items-center px-2">
-                <div>
-                    <h2 class="text-xl font-bold text-white">高校2年 必須英単語一覧</h2>
-                    <p class="text-xs text-slate-400">全25単語のイラストヒントと意味の確認</p>
-                </div>
-                <!-- 検索バー -->
-                <input type="text" id="dict-search" oninput="filterDictionary()" placeholder="単語・意味を検索..." class="bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-sky-500 w-44 sm:w-64">
-            </div>
-
-            <!-- 単語カードグリッド -->
-            <div id="dict-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-[65vh] overflow-y-auto pr-1">
-                <!-- 動的生成 -->
-            </div>
-        </section>
-
-    </main>
-
-    <!-- フッター -->
-    <footer class="w-full max-w-4xl mx-auto px-4 py-4 text-center text-xs text-slate-500">
-        高校2年レベル 英単語学習アプリ &bull; イラスト付き自動ヒント & Sound Effects
-    </footer>
-
-    <!-- アプリケーション・ロジック -->
-    <script>
-        // ==========================================
-        // 1. 英単語データセット (全25語: 高校2年 / 準1級・2級レベル)
-        // SVGイラストはインラインコードとして保持
-        // ==========================================
-        const vocabularyDataset = [
-            {
-                id: 1,
-                word: "priority",
-                part: "名詞",
-                meaning: "優先事項、優先権",
-                phonetic: "/ praɪˈɔːrəti /",
-                svgHint: `<svg viewBox="0 0 100 100" class="w-full h-full"><rect x="15" y="20" width="70" height="15" rx="4" fill="#0284c7"/><rect x="15" y="42" width="70" height="15" rx="4" fill="#334155"/><rect x="15" y="64" width="70" height="15" rx="4" fill="#334155"/><path d="M25 27.5 L30 32 L40 23" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/><text x="48" y="32" font-size="9" fill="#ffffff" font-weight="bold">No.1 FIRST</text></svg>`,
-                textHint: "最優先で取り組むべきもの"
-            },
-            {
-                id: 2,
-                word: "reluctant",
-                part: "形容詞",
-                meaning: "気が進まない、気が乗らない",
-                phonetic: "/ rɪˈlʌktənt /",
-                svgHint: `<svg viewBox="0 0 100 100" class="w-full h-full"><circle cx="50" cy="45" r="25" fill="#f59e0b" opacity="0.2"/><circle cx="50" cy="45" r="20" fill="none" stroke="#f59e0b" stroke-width="2"/><circle cx="43" cy="40" r="2" fill="#f59e0b"/><circle cx="57" cy="40" r="2" fill="#f59e0b"/><path d="M40 54 Q50 46 60 54" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/><path d="M20 75 L35 60" stroke="#ef4444" stroke-width="3" stroke-linecap="round"/></svg>`,
-                textHint: "嫌々ながら行動する様子"
-            },
-            {
-                id: 3,
-                word: "substitute",
-                part: "動詞 / 名詞",
-                meaning: "代用する、代理人",
-                phonetic: "/ ˈsʌbstɪtjuːt /",
-                svgHint: `<svg viewBox="0 0 100 100" class="w-full h-full"><rect x="15" y="35" width="28" height="30" rx="4" fill="#64748b"/><text x="25" y="55" font-size="14" fill="#ffffff">A</text><rect x="57" y="35" width="28" height="30" rx="4" fill="#38bdf8"/><text x="67" y="55" font-size="14" fill="#ffffff">B</text><path d="M 45 42 Q 50 35 55 42" fill="none" stroke="#38bdf8" stroke-width="2.5" marker-end="url(#arrow)"/><path d="M 55 58 Q 50 65 45 58" fill="none" stroke="#64748b" stroke-width="2.5"/></svg>`,
-                textHint: "Aの代わりにBを使うこと"
-            },
-            {
-                id: 4,
-                word: "precise",
-                part: "形容詞",
-                meaning: "正確な、精密な",
-                phonetic: "/ prɪˈsaɪs /",
-                svgHint: `<svg viewBox="0 0 100 100" class="w-full h-full"><circle cx="50" cy="50" r="30" fill="none" stroke="#10b981" stroke-width="2"/><circle cx="50" cy="50" r="20" fill="none" stroke="#10b981" stroke-width="1.5"/><circle cx="50" cy="50" r="8" fill="#10b981"/><line x1="50" y1="10" x2="50" y2="90" stroke="#10b981" stroke-width="1" stroke-dasharray="2 2"/><line x1="10" y1="50" x2="90" y2="50" stroke="#10b981" stroke-width="1" stroke-dasharray="2 2"/></svg>`,
-                textHint: "寸分の狂いもない的確さ"
-            },
-            {
-                id: 5,
-                word: "hesitate",
-                part: "動詞",
-                meaning: "ためらう、躊躇する",
-                phonetic: "/ ˈhezɪteɪt /",
-                svgHint: `<svg viewBox="0 0 100 100" class="w-full h-full"><circle cx="50" cy="40" r="16" fill="none" stroke="#eab308" stroke-width="2"/><path d="M 38 75 C 38 60, 62 60, 62 75" fill="none" stroke="#eab308" stroke-width="2"/><text x="45" y="30" font-size="16" fill="#eab308" font-weight="bold">?</text><path d="M 25 50 L 32 50" stroke="#eab308" stroke-width="2" stroke-dasharray="1 2"/><path d="M 68 50 L 75 50" stroke="#eab308" stroke-width="2" stroke-dasharray="1 2"/></svg>`,
-                textHint: "決断できずに立ち止まる"
-            },
-            {
-                id: 6,
-                word: "exaggerate",
-                part: "動詞",
-                meaning: "誇張する、大げさに言う",
-                phonetic: "/ ɪɡˈzædʒəreɪt /",
-                svgHint: `<svg viewBox="0 0 100 100" class="w-full h-full"><circle cx="35" cy="50" r="12" fill="#ec4899" opacity="0.4"/><circle cx="65" cy="50" r="24" fill="#ec4899" opacity="0.8"/><path d="M 47 50 L 53 50" stroke="#ffffff" stroke-width="2" marker-end="url(#arrow)"/><text x="60" y="55" font-size="12" fill="#ffffff" font-weight="bold">BIG!</text></svg>`,
-                textHint: "実際よりも大きく話す"
-            },
-            {
-                id: 7,
-                word: "abundant",
-                part: "形容詞",
-                meaning: "豊富な、大量の",
-                phonetic: "/ əˈbʌndənt /",
-                svgHint: `<svg viewBox="0 0 100 100" class="w-full h-full"><path d="M 30 70 Q 50 30 70 70 Z" fill="#10b981" opacity="0.3"/><circle cx="40" cy="65" r="6" fill="#10b981"/><circle cx="55" cy="55" r="8" fill="#10b981"/><circle cx="60" cy="70" r="7" fill="#10b981"/><circle cx="45" cy="45" r="5" fill="#10b981"/><circle cx="50" cy="70" r="6" fill="#10b981"/></svg>`,
-                textHint: "余るほどたくさんある"
-            },
-            {
-                id: 8,
-                word: "cooperate",
-                part: "動詞",
-                meaning: "協力する、協同する",
-                phonetic: "/ kəʊˈɒpəreɪt /",
-                svgHint: `<svg viewBox="0 0 100 100" class="w-full h-full"><circle cx="35" cy="45" r="14" fill="#6366f1"/><circle cx="65" cy="45" r="14" fill="#8b5cf6"/><path d="M 35 60 C 35 75, 65 75, 65 60" fill="#6366f1" opacity="0.5"/><path d="M 40 45 L 60 45" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/></svg>`,
-                textHint: "力を合わせて目標に向かう"
-            },
-            {
-                id: 9,
-                word: "crucial",
-                part: "形容詞",
-                meaning: "決定的な、極めて重要な",
-                phonetic: "/ ˈkruːʃl /",
-                svgHint: `<svg viewBox="0 0 100 100" class="w-full h-full"><path d="M 50 15 L 60 40 L 88 40 L 65 57 L 74 83 L 50 66 L 26 83 L 35 57 L 12 40 L 40 40 Z" fill="#f59e0b"/><circle cx="50" cy="50" r="8" fill="#ffffff"/></svg>`,
-                textHint: "勝敗や結果を左右する重要さ"
-            },
-            {
-                id: 10,
-                word: "eliminate",
-                part: "動詞",
-                meaning: "取り除く、排除する",
-                phonetic: "/ ɪˈlɪmɪneɪt /",
-                svgHint: `<svg viewBox="0 0 100 100" class="w-full h-full"><rect x="25" y="25" width="50" height="50" rx="8" fill="#334155"/><line x1="30" y1="30" x2="70" y2="70" stroke="#ef4444" stroke-width="6" stroke-linecap="round"/><line x1="70" y1="30" x2="30" y2="70" stroke="#ef4444" stroke-width="6" stroke-linecap="round"/></svg>`,
-                textHint: "不要なものを完全に消去する"
-            },
-            {
-                id: 11,
-                word: "inevitable",
-                part: "形容詞",
-                meaning: "避けることができない、不可避の",
-                phonetic: "/ ɪnˈevɪtəbl /",
-                svgHint: `<svg viewBox="0 0 100 100" class="w-full h-full"><line x1="15" y1="50" x2="75" y2="50" stroke="#38bdf8" stroke-width="4"/><polygon points="75,40 90,50 75,60" fill="#38bdf8"/><rect x="70" y="20" width="8" height="60" fill="#f43f5e"/></svg>`,
-                textHint: "どうあがいても避けられない"
-            },
-            {
-                id: 12,
-                word: "prohibit",
-                part: "動詞",
-                meaning: "禁止する",
-                phonetic: "/ prəˈhɪbɪt /",
-                svgHint: `<svg viewBox="0 0 100 100" class="w-full h-full"><circle cx="50" cy="50" r="30" fill="none" stroke="#ef4444" stroke-width="6"/><line x1="29" y1="29" x2="71" y2="71" stroke="#ef4444" stroke-width="6"/></svg>`,
-                textHint: "法律やルールで制限する"
-            },
-            {
-                id: 13,
-                word: "relieve",
-                part: "動詞",
-                meaning: "和らげる、安心させる",
-                phonetic: "/ rɪˈliːv /",
-                svgHint: `<svg viewBox="0 0 100 100" class="w-full h-full"><path d="M 50 20 C 30 20 20 40 20 55 C 20 75 40 85 50 85 C 60 85 80 75 80 55 C 80 40 70 20 50 20 Z" fill="#06b6d4" opacity="0.3"/><path d="M 35 55 Q 50 68 65 55" fill="none" stroke="#06b6d4" stroke-width="3" stroke-linecap="round"/></svg>`,
-                textHint: "痛みを軽減したりほっとさせる"
-            },
-            {
-                id: 14,
-                word: "temporary",
-                part: "形容詞",
-                meaning: "一時的な、仮の",
-                phonetic: "/ ˈtemprəri /",
-                svgHint: `<svg viewBox="0 0 100 100" class="w-full h-full"><circle cx="50" cy="50" r="28" fill="none" stroke="#a855f7" stroke-width="3"/><path d="M 50 28 L 50 50 L 65 50" fill="none" stroke="#a855f7" stroke-width="3" stroke-linecap="round"/><path d="M 20 20 L 35 20" stroke="#a855f7" stroke-width="2"/></svg>`,
-                textHint: "永久ではなく短い間だけ"
-            },
-            {
-                id: 15,
-                word: "flexible",
-                part: "形容詞",
-                meaning: "柔軟な、融通の利く",
-                phonetic: "/ ˈfleksəbl /",
-                svgHint: `<svg viewBox="0 0 100 100" class="w-full h-full"><path d="M 30 25 C 70 25, 70 75, 30 75" fill="none" stroke="#3b82f6" stroke-width="6" stroke-linecap="round"/></svg>`,
-                textHint: "状況に合わせて曲げられる"
-            },
-            {
-                id: 16,
-                word: "guarantee",
-                part: "動詞 / 名詞",
-                meaning: "保証する、約束する",
-                phonetic: "/ ˌɡærənˈtiː /",
-                svgHint: `<svg viewBox="0 0 100 100" class="w-full h-full"><path d="M 50 20 L 75 30 V 55 C 75 70 50 82 50 82 C 50 82 25 70 25 55 V 30 Z" fill="#eab308" opacity="0.3" stroke="#eab308" stroke-width="2"/><path d="M 40 50 L 47 57 L 62 42" fill="none" stroke="#eab308" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
-                textHint: "品質や安全を確実に請け負う"
-            },
-            {
-                id: 17,
-                word: "predict",
-                part: "動詞",
-                meaning: "予測する、予言する",
-                phonetic: "/ prɪˈdɪkt /",
-                svgHint: `<svg viewBox="0 0 100 100" class="w-full h-full"><circle cx="50" cy="50" r="24" fill="#8b5cf6" opacity="0.4"/><circle cx="50" cy="50" r="18" fill="#8b5cf6" opacity="0.7"/><path d="M 35 75 Q 50 65 65 75" stroke="#a78bfa" stroke-width="2"/></svg>`,
-                textHint: "未来に起こることを言い当てる"
-            },
-            {
-                id: 18,
-                word: "preserve",
-                part: "動詞",
-                meaning: "保存する、保護する",
-                phonetic: "/ prɪˈzɜːv /",
-                svgHint: `<svg viewBox="0 0 100 100" class="w-full h-full"><rect x="30" y="30" width="40" height="45" rx="6" fill="none" stroke="#10b981" stroke-width="3"/><path d="M 25 30 H 75" stroke="#10b981" stroke-width="4"/><circle cx="50" cy="55" r="8" fill="#10b981" opacity="0.5"/></svg>`,
-                textHint: "傷まないように守り維持する"
-            },
-            {
-                id: 19,
-                word: "fundamental",
-                part: "形容詞",
-                meaning: "基本的な、根本的な",
-                phonetic: "/ ˌfʌndəˈmentl /",
-                svgHint: `<svg viewBox="0 0 100 100" class="w-full h-full"><rect x="20" y="70" width="60" height="10" fill="#64748b"/><polygon points="50,25 25,65 75,65" fill="#0284c7" opacity="0.7"/></svg>`,
-                textHint: "すべての土台・基礎となる部分"
-            },
-            {
-                id: 20,
-                word: "confuse",
-                part: "動詞",
-                meaning: "混乱させる、困惑させる",
-                phonetic: "/ kənˈfjuːz /",
-                svgHint: `<svg viewBox="0 0 100 100" class="w-full h-full"><path d="M 30 50 Q 40 20 50 50 T 70 50 Q 80 80 50 70 Z" fill="none" stroke="#f43f5e" stroke-width="3"/><circle cx="50" cy="30" r="3" fill="#f43f5e"/><circle cx="65" cy="65" r="3" fill="#f43f5e"/></svg>`,
-                textHint: "頭の中がパニックでまとまらない"
-            },
-            {
-                id: 21,
-                word: "sympathy",
-                part: "名詞",
-                meaning: "同情、共感",
-                phonetic: "/ ˈsɪmpəθi /",
-                svgHint: `<svg viewBox="0 0 100 100" class="w-full h-full"><path d="M 35 35 C 35 25 45 25 50 35 C 55 25 65 25 65 35 C 65 50 50 60 50 65 C 50 60 35 50 35 35 Z" fill="#ec4899"/></svg>`,
-                textHint: "人の気持ちに寄り添う心"
-            },
-            {
-                id: 22,
-                word: "candidate",
-                part: "名詞",
-                meaning: "候補者、志望者",
-                phonetic: "/ ˈkændɪdət /",
-                svgHint: `<svg viewBox="0 0 100 100" class="w-full h-full"><circle cx="50" cy="35" r="12" fill="#3b82f6"/><path d="M 30 70 C 30 52 70 52 70 70" fill="#3b82f6"/><path d="M 60 25 L 75 25 L 75 40" stroke="#eab308" stroke-width="3" fill="none"/></svg>`,
-                textHint: "選挙や試験で選ばれる対象の人"
-            },
-            {
-                id: 23,
-                word: "sufficient",
-                part: "形容詞",
-                meaning: "十分な、足りている",
-                phonetic: "/ səˈfɪʃnt /",
-                svgHint: `<svg viewBox="0 0 100 100" class="w-full h-full"><rect x="30" y="30" width="40" height="50" rx="4" fill="none" stroke="#10b981" stroke-width="3"/><rect x="30" y="45" width="40" height="35" rx="2" fill="#10b981" opacity="0.6"/><line x1="25" y1="45" x2="75" y2="45" stroke="#10b981" stroke-width="2" stroke-dasharray="2 2"/></svg>`,
-                textHint: "必要な量が満たされている"
-            },
-            {
-                id: 24,
-                word: "reluctant",
-                part: "形容詞",
-                meaning: "気が進まない",
-                phonetic: "/ rɪˈlʌktənt /",
-                svgHint: `<svg viewBox="0 0 100 100" class="w-full h-full"><circle cx="50" cy="50" r="25" fill="#f59e0b" opacity="0.2"/><path d="M 35 60 Q 50 48 65 60" fill="none" stroke="#f59e0b" stroke-width="3"/></svg>`,
-                textHint: "嫌だなと思いながらやる"
-            },
-            {
-                id: 25,
-                word: "transform",
-                part: "動詞",
-                meaning: "変形させる、一変させる",
-                phonetic: "/ trænsˈfɔːm /",
-                svgHint: `<svg viewBox="0 0 100 100" class="w-full h-full"><rect x="20" y="38" width="24" height="24" fill="#6366f1"/><circle cx="70" cy="50" r="14" fill="#ec4899"/><path d="M 46 50 L 54 50" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/></svg>`,
-                textHint: "姿や形を大きく変える"
-            }
-        ];
-
-        // ==========================================
-        // 2. Web Audio API サウンド合成モジュール
-        // 外部ファイルなしで効果音を即時再生
-        // ==========================================
-        class SoundEffects {
-            constructor() {
-                this.ctx = null;
-                this.enabled = true;
-            }
-
-            init() {
-                if (!this.ctx) {
-                    const AudioContext = window.AudioContext || window.webkitAudioContext;
-                    this.ctx = new AudioContext();
-                }
-            }
-
-            // 正解音: 高音のピポーン (C5 -> G5)
-            playCorrect() {
-                if (!this.enabled) return;
-                this.init();
-                const now = this.ctx.currentTime;
-
-                const osc1 = this.ctx.createOscillator();
-                const osc2 = this.ctx.createOscillator();
-                const gain = this.ctx.createGain();
-
-                osc1.type = 'sine';
-                osc2.type = 'sine';
-
-                osc1.frequency.setValueAtTime(523.25, now); // C5
-                osc1.frequency.setValueAtTime(783.99, now + 0.1); // G5
-
-                gain.gain.setValueAtTime(0.15, now);
-                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
-
-                osc1.connect(gain);
-                gain.connect(this.ctx.destination);
-
-                osc1.start(now);
-                osc1.stop(now + 0.35);
-            }
-
-            // 不正解音: 低音のブブー (鋸波)
-            playIncorrect() {
-                if (!this.enabled) return;
-                this.init();
-                const now = this.ctx.currentTime;
-
-                const osc = this.ctx.createOscillator();
-                const gain = this.ctx.createGain();
-
-                osc.type = 'sawtooth';
-                osc.frequency.setValueAtTime(150, now);
-                osc.frequency.setValueAtTime(120, now + 0.15);
-
-                gain.gain.setValueAtTime(0.2, now);
-                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
-
-                osc.connect(gain);
-                gain.connect(this.ctx.destination);
-
-                osc.start(now);
-                osc.stop(now + 0.4);
-            }
-
-            // ポップ音 / ヒント出現音
-            playPop() {
-                if (!this.enabled) return;
-                this.init();
-                const now = this.ctx.currentTime;
-
-                const osc = this.ctx.createOscillator();
-                const gain = this.ctx.createGain();
-
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(400, now);
-                osc.frequency.exponentialRampToValueAtTime(800, now + 0.08);
-
-                gain.gain.setValueAtTime(0.1, now);
-                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
-
-                osc.connect(gain);
-                gain.connect(this.ctx.destination);
-
-                osc.start(now);
-                osc.stop(now + 0.08);
-            }
-        }
-
-        const sounds = new SoundEffects();
-
-        function toggleSound() {
-            sounds.enabled = !sounds.enabled;
-            document.getElementById('sound-icon-on').classList.toggle('hidden', !sounds.enabled);
-            document.getElementById('sound-icon-off').classList.toggle('hidden', sounds.enabled);
-        }
-
-        // ==========================================
-        // 3. アプリ状態・クイズ管理ロジック
-        // ==========================================
-        let currentQuestions = [];
-        let currentIndex = 0;
-        let score = 0;
-        let streak = 0;
-        let maxStreak = 0;
-        let reviewList = [];
-        let timerInterval = null;
-        let secondsElapsed = 0;
-        let hintTimer = null;
-        let isAnswered = false;
-
-        // 初期化
-        window.onload = () => {
-            initQuiz();
-            renderDictionary();
-        };
-
-        // クイズの初期化
-        function initQuiz() {
-            // データセットからランダムに10問抽出
-            const shuffled = [...vocabularyDataset].sort(() => 0.5 - Math.random());
-            currentQuestions = shuffled.slice(0, 10);
-            currentIndex = 0;
-            score = 0;
-            streak = 0;
-            maxStreak = 0;
-            reviewList = [];
-            secondsElapsed = 0;
-            
-            clearInterval(timerInterval);
-            timerInterval = setInterval(() => {
-                secondsElapsed++;
-                const mins = String(Math.floor(secondsElapsed / 60)).padStart(2, '0');
-                const secs = String(secondsElapsed % 60).padStart(2, '0');
-                document.getElementById('timer-display').innerText = `⏱ ${mins}:${secs}`;
-            }, 1000);
-
-            updateScoreDisplay();
-            loadQuestion();
-        }
-
-        // 質問のロード
-        function loadQuestion() {
-            isAnswered = false;
-            const q = currentQuestions[currentIndex];
-
-            // UI更新
-            document.getElementById('question-number').innerText = `第 ${currentIndex + 1} / ${currentQuestions.length} 問`;
-            document.getElementById('progress-bar').style.width = `${((currentIndex + 1) / currentQuestions.length) * 100}%`;
-            document.getElementById('target-word').innerText = q.word;
-            document.getElementById('phonetic-symbol').innerText = q.phonetic;
-            document.getElementById('word-category').innerText = `${q.part}`;
-
-            // 次へボタン非表示
-            document.getElementById('next-btn-container').classList.add('hidden');
-
-            // ヒント表示のリセット & タイマー開始 (3秒後に表示)
-            resetHintState(q);
-
-            // 選択肢の生成
-            generateOptions(q);
-        }
-
-        // ヒント領域の管理 (数秒後にタイマーでじんわり表示)
-        function resetHintState(q) {
-            clearTimeout(hintTimer);
-
-            const loader = document.getElementById('hint-loader');
-            const hintContent = document.getElementById('hint-content');
-            const timerText = document.getElementById('hint-timer-text');
-            const svgWrapper = document.getElementById('svg-illustration-wrapper');
-            const textHintBox = document.getElementById('text-hint-box');
-
-            loader.classList.remove('hidden');
-            hintContent.classList.add('hidden');
-
-            let countdown = 3;
-            timerText.innerText = `💡 ${countdown}秒後に画像ヒントが表示されます...`;
-
-            const countdownInterval = setInterval(() => {
-                countdown--;
-                if (countdown > 0) {
-                    timerText.innerText = `💡 ${countdown}秒後に画像ヒントが表示されます...`;
-                } else {
-                    clearInterval(countdownInterval);
-                }
-            }, 1000);
-
-            // 3秒後にヒントを表示
-            hintTimer = setTimeout(() => {
-                clearInterval(countdownInterval);
-                loader.classList.add('hidden');
-                hintContent.classList.remove('hidden');
-                svgWrapper.innerHTML = q.svgHint;
-                textHintBox.innerText = `ヒント: ${q.textHint}`;
-                sounds.playPop();
-            }, 3000);
-        }
-
-        // 4択肢の生成
-        function generateOptions(currentQ) {
-            const grid = document.getElementById('options-grid');
-            grid.innerHTML = '';
-
-            // 誤答選択肢をランダム選出
-            const otherWords = vocabularyDataset.filter(item => item.id !== currentQ.id);
-            const shuffledOthers = [...otherWords].sort(() => 0.5 - Math.random()).slice(0, 3);
-            
-            const options = [...shuffledOthers, currentQ].sort(() => 0.5 - Math.random());
-
-            options.forEach(opt => {
-                const btn = document.createElement('button');
-                btn.className = "glass-card-light hover:bg-slate-700/60 border border-slate-700 p-4 rounded-2xl text-left transition-all duration-200 hover:scale-[1.02] flex items-center justify-between group cursor-pointer";
-                btn.onclick = () => checkAnswer(opt.id, currentQ.id, btn);
-
-                btn.innerHTML = `
-                    <span class="text-base font-medium text-slate-200 group-hover:text-white">${opt.meaning}</span>
-                    <span class="w-6 h-6 rounded-full border border-slate-600 flex items-center justify-center text-xs text-slate-400 group-hover:border-sky-400 group-hover:text-sky-400">✓</span>
-                `;
-                grid.appendChild(btn);
-            });
-        }
-
-        // 解答チェック
-        function checkAnswer(selectedId, correctId, clickedBtn) {
-            if (isAnswered) return;
-            isAnswered = true;
-            clearTimeout(hintTimer);
-
-            // 即座にヒントも表示しておく
-            document.getElementById('hint-loader').classList.add('hidden');
-            document.getElementById('hint-content').classList.remove('hidden');
-            document.getElementById('svg-illustration-wrapper').innerHTML = currentQuestions[currentIndex].svgHint;
-
-            const allButtons = document.getElementById('options-grid').children;
-
-            if (selectedId === correctId) {
-                // 正解
-                sounds.playCorrect();
-                clickedBtn.className = "bg-emerald-500/20 border-2 border-emerald-500 p-4 rounded-2xl text-left flex items-center justify-between text-emerald-300 font-bold shadow-lg shadow-emerald-500/10";
-                score += 10;
-                streak++;
-                if (streak > maxStreak) maxStreak = streak;
-                reviewList.push({ ...currentQuestions[currentIndex], correct: true });
-            } else {
-                // 不正解
-                sounds.playIncorrect();
-                clickedBtn.className = "bg-rose-500/20 border-2 border-rose-500 p-4 rounded-2xl text-left flex items-center justify-between text-rose-300 font-bold";
-                streak = 0;
-                reviewList.push({ ...currentQuestions[currentIndex], correct: false });
-
-                // 正解のボタンをハイライト
-                Array.from(allButtons).forEach(btn => {
-                    if (btn.innerText.includes(currentQuestions[currentIndex].meaning)) {
-                        btn.className = "bg-emerald-500/20 border-2 border-emerald-500 p-4 rounded-2xl text-left flex items-center justify-between text-emerald-300 font-bold";
-                    }
-                });
-            }
-
-            // 全ボタンを非無効化
-            Array.from(allButtons).forEach(btn => btn.onclick = null);
-
-            updateScoreDisplay();
-            document.getElementById('next-btn-container').classList.remove('hidden');
-        }
-
-        // 次の問題または結果画面
-        function nextQuestion() {
-            currentIndex++;
-            if (currentIndex < currentQuestions.length) {
-                loadQuestion();
-            } else {
-                showResults();
-            }
-        }
-
-        // スコア表示更新
-        function updateScoreDisplay() {
-            document.getElementById('score-display').innerText = `Score: ${score}`;
-            document.getElementById('streak-count').innerText = streak;
-        }
-
-        // リザルト画面
-        function showResults() {
-            clearInterval(timerInterval);
-            document.getElementById('quiz-screen').classList.add('hidden');
-            document.getElementById('result-screen').classList.remove('hidden');
-
-            const correctCount = reviewList.filter(item => item.correct).length;
-            const accuracy = Math.round((correctCount / currentQuestions.length) * 100);
-
-            document.getElementById('result-accuracy').innerText = `${accuracy}%`;
-            document.getElementById('result-score').innerText = `${correctCount} / ${currentQuestions.length}`;
-            document.getElementById('result-max-streak').innerText = `${maxStreak}`;
-
-            // 復習リストの表示
-            const reviewContainer = document.getElementById('review-list');
-            reviewContainer.innerHTML = '';
-
-            reviewList.forEach(item => {
-                const div = document.createElement('div');
-                div.className = `p-3 rounded-xl glass-card-light flex items-center justify-between border ${item.correct ? 'border-emerald-500/30' : 'border-rose-500/30'}`;
-                div.innerHTML = `
-                    <div class="flex items-center space-x-3">
-                        <span class="${item.correct ? 'text-emerald-400' : 'text-rose-400'} text-lg">${item.correct ? '✓' : '✕'}</span>
-                        <div>
-                            <p class="font-bold text-white text-sm">${item.word} <span class="text-xs font-normal text-slate-400">${item.phonetic}</span></p>
-                            <p class="text-xs text-slate-300">${item.meaning}</p>
-                        </div>
-                    </div>
-                    <div class="w-8 h-8 opacity-80">
-                        ${item.svgHint}
-                    </div>
-                `;
-                reviewContainer.appendChild(div);
-            });
-        }
-
-        function restartQuiz() {
-            document.getElementById('result-screen').classList.add('hidden');
-            document.getElementById('quiz-screen').classList.remove('hidden');
-            initQuiz();
-        }
-
-        // モード切替
-        function switchMode(mode) {
-            sounds.playPop();
-            const quizBtn = document.getElementById('nav-quiz-btn');
-            const dictBtn = document.getElementById('nav-dict-btn');
-            const quizScreen = document.getElementById('quiz-screen');
-            const dictScreen = document.getElementById('dict-screen');
-            const resultScreen = document.getElementById('result-screen');
-
-            if (mode === 'quiz') {
-                quizBtn.className = "px-3 py-1.5 rounded-lg text-sm font-semibold transition-all bg-sky-500 text-white shadow-sm hover:bg-sky-400";
-                dictBtn.className = "px-3 py-1.5 rounded-lg text-sm font-semibold transition-all text-slate-300 hover:text-white hover:bg-slate-700/50";
-                quizScreen.classList.remove('hidden');
-                dictScreen.classList.add('hidden');
-            } else {
-                dictBtn.className = "px-3 py-1.5 rounded-lg text-sm font-semibold transition-all bg-sky-500 text-white shadow-sm hover:bg-sky-400";
-                quizBtn.className = "px-3 py-1.5 rounded-lg text-sm font-semibold transition-all text-slate-300 hover:text-white hover:bg-slate-700/50";
-                dictScreen.classList.remove('hidden');
-                quizScreen.classList.add('hidden');
-                resultScreen.classList.add('hidden');
-            }
-        }
-
-        // 単語帳のレンダリング
-        function renderDictionary(filterText = "") {
-            const container = document.getElementById('dict-grid');
-            container.innerHTML = '';
-
-            const filtered = vocabularyDataset.filter(item => 
-                item.word.toLowerCase().includes(filterText.toLowerCase()) || 
-                item.meaning.includes(filterText)
-            );
-
-            filtered.forEach(item => {
-                const card = document.createElement('div');
-                card.className = "glass-card rounded-2xl p-4 flex items-center space-x-4 border border-slate-700/50 hover:border-sky-500/40 transition-all";
-                card.innerHTML = `
-                    <div class="w-16 h-16 bg-slate-800 rounded-xl p-2 flex-shrink-0 border border-slate-700/50 flex items-center justify-center">
-                        ${item.svgHint}
-                    </div>
-                    <div class="flex-grow">
-                        <div class="flex items-center space-x-2">
-                            <h3 class="font-bold text-lg text-white">${item.word}</h3>
-                            <span class="text-xs px-2 py-0.5 rounded bg-slate-700 text-slate-300">${item.part}</span>
-                        </div>
-                        <p class="text-xs text-slate-400 font-mono">${item.phonetic}</p>
-                        <p class="text-sm text-sky-300 font-semibold mt-1">${item.meaning}</p>
-                    </div>
-                `;
-                container.appendChild(card);
-            });
-        }
-
-        function filterDictionary() {
-            const query = document.getElementById('dict-search').value;
-            renderDictionary(query);
-        }
-    </script>
+<body>
+
+<div class="app-container">
+  <header>
+    <h1>英単語マスター</h1>
+    <select id="levelSelect" class="level-select" onchange="changeLevel()">
+      <option value="jh1">中学1年</option>
+      <option value="jh2">中学2年</option>
+      <option value="jh3">中学3年</option>
+      <option value="hs1">高校1年</option>
+      <option value="hs2" selected>高校2年</option>
+      <option value="hs3">高校3年</option>
+    </select>
+  </header>
+
+  <div class="stats-bar">
+    <div>正解数: <span id="score">0</span></div>
+    <div>連続正解: <span id="streak">0</span></div>
+  </div>
+
+  <div class="word-card">
+    <div class="word-title" id="wordTitle">apple</div>
+  </div>
+
+  <div class="hint-container">
+    <div class="hint-timer-box" id="timerBox">
+      <div class="timer-circle">
+        <svg>
+          <circle class="bg-circle" cx="25" cy="25" r="20"></circle>
+          <circle class="progress-circle" id="progressCircle" cx="25" cy="25" r="20"></circle>
+        </svg>
+        <div class="timer-text" id="timerText">5</div>
+      </div>
+      <div class="hint-text-label">5秒後にヒントを表示</div>
+    </div>
+
+    <div class="hint-content" id="hintContent">
+      <div id="hintSvg" class="hint-icon"></div>
+      <div class="hint-caption" id="hintCaption">ヒントイメージ</div>
+    </div>
+  </div>
+
+  <div class="options-grid" id="optionsGrid">
+    <button class="option-btn" onclick="checkAnswer(0)"></button>
+    <button class="option-btn" onclick="checkAnswer(1)"></button>
+    <button class="option-btn" onclick="checkAnswer(2)"></button>
+    <button class="option-btn" onclick="checkAnswer(3)"></button>
+  </div>
+
+  <div class="controls">
+    <button class="btn-next" id="nextBtn" onclick="nextQuestion()">次の問題へ ➔</button>
+  </div>
+</div>
+
+<script>
+// Web Audio API による効果音生成
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let audioCtx;
+
+function initAudio() {
+  if (!audioCtx) {
+    audioCtx = new AudioCtx();
+  }
+}
+
+// 楽しい正解音（ファンファーレ風アルペジオ）
+function playCorrectSound() {
+  initAudio();
+  const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+  notes.forEach((freq, idx) => {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(freq, audioCtx.currentTime + idx * 0.08);
+    gain.gain.setValueAtTime(0.15, audioCtx.currentTime + idx * 0.08);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + idx * 0.08 + 0.3);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start(audioCtx.currentTime + idx * 0.08);
+    osc.stop(audioCtx.currentTime + idx * 0.08 + 0.3);
+  });
+}
+
+// コミカルな不正解音（マヌケなピッチダウン音）
+function playWrongSound() {
+  initAudio();
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.type = 'sawtooth';
+  osc.frequency.setValueAtTime(280, audioCtx.currentTime);
+  osc.frequency.exponentialRampToValueAtTime(80, audioCtx.currentTime + 0.4);
+  
+  gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.4);
+  
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+  osc.start();
+  osc.stop(audioCtx.currentTime + 0.4);
+}
+
+// ひらめきヒント音（ピコーン♪）
+function playHintSound() {
+  initAudio();
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(880, audioCtx.currentTime); // A5
+  osc.frequency.setValueAtTime(1760, audioCtx.currentTime + 0.1); // A6
+  
+  gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
+  
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+  osc.start();
+  osc.stop(audioCtx.currentTime + 0.3);
+}
+
+// SVGアイコン定義
+const svgIcons = {
+  apple: `<svg viewBox="0 0 64 64"><path fill="#ef4444" d="M32 12c-8-6-20 0-20 16 0 16 12 28 20 32 8-4 20-16 20-32 0-16-12-22-20-16z"/><path fill="#15803d" d="M32 12c2-4 6-6 10-4-2 4-6 6-10 4z"/></svg>`,
+  book: `<svg viewBox="0 0 64 64"><path fill="#3b82f6" d="M8 12h20v40H8z"/><path fill="#60a5fa" d="M36 12h20v40H36z"/><path fill="#1d4ed8" d="M28 12h8v40h-8z"/></svg>`,
+  run: `<svg viewBox="0 0 64 64"><circle fill="#f59e0b" cx="32" cy="12" r="8"/><path fill="#f59e0b" d="M20 28l12-8 8 6 12-4M28 32l-8 16M36 32l8 20" stroke="#f59e0b" stroke-width="6" stroke-linecap="round"/></svg>`,
+  happy: `<svg viewBox="0 0 64 64"><circle fill="#facc15" cx="32" cy="32" r="28"/><circle fill="#1f2937" cx="20" cy="24" r="4"/><circle fill="#1f2937" cx="44" cy="24" r="4"/><path fill="none" stroke="#1f2937" stroke-width="4" stroke-linecap="round" d="M20 40q12 12 24 0"/></svg>`,
+  study: `<svg viewBox="0 0 64 64"><path fill="#8b5cf6" d="M32 8L4 24l28 16 28-16z"/><path fill="#6d28d9" d="M16 34v16q16 10 32 0V34"/></svg>`,
+  future: `<svg viewBox="0 0 64 64"><circle fill="#06b6d4" cx="32" cy="32" r="24" opacity="0.3"/><path fill="none" stroke="#0891b2" stroke-width="4" d="M32 12v20l12 8"/></svg>`,
+  global: `<svg viewBox="0 0 64 64"><circle fill="none" stroke="#10b981" stroke-width="4" cx="32" cy="32" r="24"/><path fill="none" stroke="#10b981" stroke-width="4" d="M8 32h48M32 8a30 30 0 0 1 0 48M32 8a30 30 0 0 0 0 48"/></svg>`,
+  protect: `<svg viewBox="0 0 64 64"><path fill="#10b981" d="M32 6L8 16v16c0 16 10 26 24 30 14-4 24-14 24-30V16z"/></svg>`,
+  economy: `<svg viewBox="0 0 64 64"><path fill="none" stroke="#f59e0b" stroke-width="6" stroke-linecap="round" d="M8 48l16-16 12 12 20-24M56 20v12M56 20H44"/></svg>`,
+  create: `<svg viewBox="0 0 64 64"><path fill="#ec4899" d="M32 8l6 18h18l-14 11 5 19-15-11-15 11 5-19-14-11h18z"/></svg>`,
+  explore: `<svg viewBox="0 0 64 64"><circle fill="none" stroke="#6366f1" stroke-width="4" cx="32" cy="32" r="26"/><path fill="#ef4444" d="M44 20l-8 20-16 4 8-20z"/></svg>`,
+  sustainable: `<svg viewBox="0 0 64 64"><path fill="none" stroke="#10b981" stroke-width="5" stroke-linecap="round" d="M48 20A20 20 0 1 0 52 36M52 16v12H40"/></svg>`,
+  innovative: `<svg viewBox="0 0 64 64"><path fill="#f59e0b" d="M32 6a18 18 0 0 0-10 33v7h20v-7A18 18 0 0 0 32 6zM22 52h20v4H22z"/></svg>`
+};
+
+// 学年別英単語データベース
+const wordDatabase = {
+  jh1: [
+    { word: "apple", options: ["りんご", "みかん", "バナナ", "ぶどう"], answer: 0, hint: "apple", hintText: "赤い果物" },
+    { word: "book", options: ["ペン", "本", "机", "鞄"], answer: 1, hint: "book", hintText: "読むもの" },
+    { word: "run", options: ["歩く", "泳ぐ", "走る", "飛ぶ"], answer: 2, hint: "run", hintText: "足を早く動かす" },
+    { word: "happy", options: ["悲しい", "怒った", "眠い", "幸せな"], answer: 3, hint: "happy", hintText: "笑顔になる気持ち" }
+  ],
+  jh2: [
+    { word: "study", options: ["勉強する", "遊ぶ", "料理する", "歌う"], answer: 0, hint: "study", hintText: "机に向かって知識を得る" },
+    { word: "future", options: ["過去", "未来", "現在", "昨日"], answer: 1, hint: "future", hintText: "これから来る時間" },
+    { word: "popular", options: ["静かな", "人気のある", "暗い", "古い"], answer: 1, hint: "happy", hintText: "みんなに愛される" }
+  ],
+  jh3: [
+    { word: "protect", options: ["破壊する", "無視する", "保護する", "攻撃する"], answer: 2, hint: "protect", hintText: "危険から守る" },
+    { word: "global", options: ["地元の", "地球規模の", "小さな", "個人的な"], answer: 1, hint: "global", hintText: "世界全体にかかわる" },
+    { word: "create", options: ["創造する", "壊す", "買う", "捨てる"], answer: 0, hint: "create", hintText: "新しく作り出す" }
+  ],
+  hs1: [
+    { word: "economy", options: ["生態系", "経済", "地理", "政治"], answer: 1, hint: "economy", hintText: "お金やモノの流れ" },
+    { word: "explore", options: ["探検する", "説明する", "無視する", "輸出する"], answer: 0, hint: "explore", hintText: "未知の場所を調べる" },
+    { word: "influence", options: ["影響", "結果", "原因", "比較"], answer: 0, hint: "study", hintText: "他者に与える力" }
+  ],
+  hs2: [
+    { word: "sustainable", options: ["一時の", "危険な", "持続可能な", "急速な"], answer: 2, hint: "sustainable", hintText: "環境を保ち維持できる" },
+    { word: "innovative", options: ["革新的な", "伝統的な", "退屈な", "複雑な"], answer: 0, hint: "innovative", hintText: "新しいアイデアに満ちた" },
+    { word: "contribute", options: ["無視する", "貢献する", "対立する", "減少する"], answer: 1, hint: "create", hintText: "役に立つために力を差し出す" },
+    { word: "crucial", options: ["極めて重要な", "些細な", "危険な", "曖昧な"], answer: 0, hint: "protect", hintText: "決定的に大切な" }
+  ],
+  hs3: [
+    { word: "abundant", options: ["乏しい", "豊富な", "急激な", "明確な"], answer: 1, hint: "create", hintText: "たくさんある様子" },
+    { word: "inevitable", options: ["避けられない", "偶然の", "望ましい", "不確かな"], answer: 0, hint: "future", hintText: "必ず起こる" },
+    { word: "reluctant", options: ["気乗りしない", "熱心な", "勇敢な", "素早い"], answer: 0, hint: "study", hintText: "乗り気ではない" }
+  ]
+};
+
+let currentLevel = 'hs2';
+let currentQuestionIndex = 0;
+let score = 0;
+let streak = 0;
+let timerInterval;
+let timeLeft = 5;
+let answered = false;
+
+function changeLevel() {
+  currentLevel = document.getElementById("levelSelect").value;
+  score = 0;
+  streak = 0;
+  updateStats();
+  nextQuestion();
+}
+
+function updateStats() {
+  document.getElementById("score").innerText = score;
+  document.getElementById("streak").innerText = streak;
+}
+
+function loadQuestion() {
+  answered = false;
+  document.getElementById("nextBtn").style.display = "none";
+  
+  const list = wordDatabase[currentLevel];
+  currentQuestionIndex = Math.floor(Math.random() * list.length);
+  const q = list[currentQuestionIndex];
+
+  document.getElementById("wordTitle").innerText = q.word;
+
+  const buttons = document.querySelectorAll(".option-btn");
+  buttons.forEach((btn, idx) => {
+    btn.innerText = q.options[idx];
+    btn.className = "option-btn";
+    btn.disabled = false;
+  });
+
+  // ヒント表示の初期化（タイマーセット）
+  resetHintTimer(q);
+}
+
+function resetHintTimer(q) {
+  clearInterval(timerInterval);
+  timeLeft = 5;
+  
+  document.getElementById("timerBox").style.display = "flex";
+  document.getElementById("hintContent").style.display = "none";
+  document.getElementById("timerText").innerText = timeLeft;
+
+  const circle = document.getElementById("progressCircle");
+  const circumference = 126;
+  circle.style.strokeDashoffset = 0;
+
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    document.getElementById("timerText").innerText = timeLeft;
+    
+    // 円形メーターのアニメーション
+    const offset = circumference - (timeLeft / 5) * circumference;
+    circle.style.strokeDashoffset = offset;
+
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      showHint(q);
+    }
+  }, 1000);
+}
+
+function showHint(q) {
+  document.getElementById("timerBox").style.display = "none";
+  document.getElementById("hintContent").style.display = "flex";
+  
+  const svgContent = svgIcons[q.hint] || svgIcons['study'];
+  document.getElementById("hintSvg").innerHTML = svgContent;
+  document.getElementById("hintCaption").innerText = q.hintText;
+
+  if (!answered) {
+    playHintSound();
+  }
+}
+
+function checkAnswer(selectedIndex) {
+  if (answered) return;
+  answered = true;
+  clearInterval(timerInterval);
+
+  const q = wordDatabase[currentLevel][currentQuestionIndex];
+  const buttons = document.querySelectorAll(".option-btn");
+
+  buttons.forEach(btn => btn.disabled = true);
+
+  if (selectedIndex === q.answer) {
+    buttons[selectedIndex].classList.add("correct");
+    playCorrectSound();
+    score += 10;
+    streak++;
+  } else {
+    buttons[selectedIndex].classList.add("wrong");
+    buttons[q.answer].classList.add("correct");
+    playWrongSound();
+    streak = 0;
+  }
+
+  updateStats();
+  document.getElementById("nextBtn").style.display = "block";
+}
+
+function nextQuestion() {
+  loadQuestion();
+}
+
+// 初回起動
+loadQuestion();
+</script>
 </body>
 </html>
