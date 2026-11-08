@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>英単語マスター - iOS音声完全対応版</title>
+  <title>英単語マスター - 音声読み上げ＆大画面ヒント版</title>
   <style>
     :root {
       --primary: #4f46e5;
@@ -82,7 +82,7 @@
 
     .word-card {
       text-align: center;
-      padding: 10px 0;
+      padding: 5px 0;
     }
 
     .word-title {
@@ -93,7 +93,7 @@
     }
 
     .hint-container {
-      min-height: 150px;
+      min-height: 200px;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -159,7 +159,7 @@
       display: none;
       flex-direction: column;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
       animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
       width: 100%;
     }
@@ -172,32 +172,35 @@
     .reading-tag {
       background: #e0e7ff;
       color: #3730a3;
-      font-size: 1rem;
+      font-size: 1.05rem;
       font-weight: 700;
-      padding: 3px 12px;
+      padding: 4px 14px;
       border-radius: 20px;
     }
 
     .hint-img-wrapper {
-      width: 110px;
-      height: 80px;
-      border-radius: 10px;
+      width: 100%;
+      max-height: 120px;
+      border-radius: 12px;
       overflow: hidden;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
       background: #e5e7eb;
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
 
     .hint-img {
       width: 100%;
-      height: 100%;
+      height: 120px;
       object-fit: cover;
     }
 
     .hint-caption {
-      font-size: 0.8rem;
+      font-size: 0.85rem;
       color: #4b5563;
       background: #ffffff;
-      padding: 2px 8px;
+      padding: 2px 10px;
       border-radius: 8px;
       box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     }
@@ -354,7 +357,7 @@
           </svg>
           <div class="timer-text" id="timerText">5</div>
         </div>
-        <div class="hint-text-label">5秒後にヒントと読み方を表示</div>
+        <div class="hint-text-label">5秒後にヒントと読み上げ</div>
       </div>
 
       <div class="hint-content" id="hintContent">
@@ -395,7 +398,6 @@ const AudioCtx = window.AudioContext || window.webkitAudioContext;
 let audioCtx;
 let isAudioUnlocked = false;
 
-// iOS向けWeb Audio APIアンロック処理
 function initAudio() {
   if (!audioCtx) {
     audioCtx = new AudioCtx();
@@ -410,6 +412,17 @@ function initAudio() {
     source.connect(audioCtx.destination);
     source.start(0);
     isAudioUnlocked = true;
+  }
+}
+
+// 英語単語の自動音声読み上げ機能（Web Speech API）
+function speakWord(word) {
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.cancel(); // 連続再生のバッティングを防ぐ
+    const utterance = new SpeechSynthesisUtterance(word);
+    utterance.lang = 'en-US';
+    utterance.rate = 0.9; // 少し聞き取りやすい速度
+    window.speechSynthesis.speak(utterance);
   }
 }
 
@@ -445,46 +458,30 @@ function playWrongSound() {
   osc.stop(audioCtx.currentTime + 0.4);
 }
 
-function playHintSound() {
-  initAudio();
-  const osc = audioCtx.createOscillator();
-  const gain = audioCtx.createGain();
-  osc.type = 'sine';
-  osc.frequency.setValueAtTime(880, audioCtx.currentTime);
-  osc.frequency.setValueAtTime(1760, audioCtx.currentTime + 0.1);
-  gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-  gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
-  osc.connect(gain);
-  gain.connect(audioCtx.destination);
-  osc.start();
-  osc.stop(audioCtx.currentTime + 0.3);
-}
-
-// 学年別英単語データベース
 const wordDatabase = {
   jh1: [
-    { word: "apple", reading: "アップル", options: ["りんご", "みかん", "バナナ", "ぶどう"], answer: 0, img: "https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=300", hintText: "赤い果物" },
-    { word: "book", reading: "ブック", options: ["ペン", "本", "机", "鞄"], answer: 1, img: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=300", hintText: "文字や情報が詰まった紙の束" },
-    { word: "run", reading: "ラン", options: ["歩く", "泳ぐ", "走る", "飛ぶ"], answer: 2, img: "https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?w=300", hintText: "足を早く動かして進む" },
-    { word: "happy", reading: "ハッピー", options: ["悲しい", "怒った", "眠い", "幸せな"], answer: 3, img: "https://images.unsplash.com/photo-1499209974431-9dac3ada00d7?w=300", hintText: "笑顔と喜びにあふれた感情" },
-    { word: "desk", reading: "デスク", options: ["机", "椅子", "窓", "ドア"], answer: 0, img: "https://images.unsplash.com/photo-1518455027359-f3f8164ba6bd?w=300", hintText: "勉強や仕事をする台" },
-    { word: "cat", reading: "キャット", options: ["犬", "猫", "鳥", "魚"], answer: 1, img: "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=300", hintText: "ニャーと鳴く気まぐれなペット" },
-    { word: "sing", reading: "シング", options: ["話す", "書く", "歌う", "聞く"], answer: 2, img: "https://images.unsplash.com/photo-1516280440614-37939bbacd81?w=300", hintText: "マイクや声で曲を奏でる" },
-    { word: "water", reading: "ウォーター", options: ["水", "牛乳", "お茶", "ジュース"], answer: 0, img: "https://images.unsplash.com/photo-1548839140-29a749e1bc4e?w=300", hintText: "生き物に不可欠な透明な液体" },
-    { word: "friend", reading: "フレンド", options: ["先生", "友達", "家族", "生徒"], answer: 1, img: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=300", hintText: "仲良く過ごす大切な存在" },
-    { word: "school", reading: "スクール", options: ["病院", "公園", "学校", "駅"], answer: 2, img: "https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=300", hintText: "校舎で仲間と学ぶ場所" }
+    { word: "apple", reading: "アップル", options: ["りんご", "みかん", "バナナ", "ぶどう"], answer: 0, img: "https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=600", hintText: "赤い果物" },
+    { word: "book", reading: "ブック", options: ["ペン", "本", "机", "鞄"], answer: 1, img: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=600", hintText: "文字や情報が詰まった紙の束" },
+    { word: "run", reading: "ラン", options: ["歩く", "泳ぐ", "走る", "飛ぶ"], answer: 2, img: "https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?w=600", hintText: "足を早く動かして進む" },
+    { word: "happy", reading: "ハッピー", options: ["悲しい", "怒った", "眠い", "幸せな"], answer: 3, img: "https://images.unsplash.com/photo-1499209974431-9dac3ada00d7?w=600", hintText: "笑顔と喜びにあふれた感情" },
+    { word: "desk", reading: "デスク", options: ["机", "椅子", "窓", "ドア"], answer: 0, img: "https://images.unsplash.com/photo-1518455027359-f3f8164ba6bd?w=600", hintText: "勉強や仕事をする台" },
+    { word: "cat", reading: "キャット", options: ["犬", "猫", "鳥", "魚"], answer: 1, img: "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=600", hintText: "ニャーと鳴く気まぐれなペット" },
+    { word: "sing", reading: "シング", options: ["話す", "書く", "歌う", "聞く"], answer: 2, img: "https://images.unsplash.com/photo-1516280440614-37939bbacd81?w=600", hintText: "マイクや声で曲を奏でる" },
+    { word: "water", reading: "ウォーター", options: ["水", "牛乳", "お茶", "ジュース"], answer: 0, img: "https://images.unsplash.com/photo-1548839140-29a749e1bc4e?w=600", hintText: "生き物に不可欠な透明な液体" },
+    { word: "friend", reading: "フレンド", options: ["先生", "友達", "家族", "生徒"], answer: 1, img: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=600", hintText: "仲良く過ごす大切な存在" },
+    { word: "school", reading: "スクール", options: ["病院", "公園", "学校", "駅"], answer: 2, img: "https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=600", hintText: "校舎で仲間と学ぶ場所" }
   ],
   hs2: [
-    { word: "sustainable", reading: "サステナブル", options: ["一時の", "危険な", "持続可能な", "急速な"], answer: 2, img: "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=300", hintText: "自然環境を守り将来に渡り維持できる" },
-    { word: "innovative", reading: "イノベーティブ", options: ["革新的な", "伝統的な", "退屈な", "複雑な"], answer: 0, img: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=300", hintText: "先端技術や新しい着想に満ちた" },
-    { word: "contribute", reading: "コントリビュー ト", options: ["無視する", "貢献する", "対立する", "減少する"], answer: 1, img: "https://images.unsplash.com/photo-1559027615-cd4628902d4a?w=300", hintText: "社会や人のために役立つ支援をする" },
-    { word: "crucial", reading: "クルーシャル", options: ["極めて重要な", "些細な", "危険な", "曖昧な"], answer: 0, img: "https://images.unsplash.com/photo-1509228468518-180dd4864904?w=300", hintText: "勝敗や成否を分ける決定的な" },
-    { word: "acquire", reading: "アクワイア", options: ["手に入れる", "失う", "延期する", "避ける"], answer: 0, img: "https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?w=300", hintText: "知識や資格を努力して自分のものにする" },
-    { word: "perspective", reading: "パースペクティブ", options: ["距離", "視点・考え方", "感情", "目標"], answer: 1, img: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=300", hintText: "物事を見つめる様々な角度・視野" },
-    { word: "subsequent", reading: "サブシクウェント", options: ["以前の", "その後の", "同時期の", "永遠の"], answer: 1, img: "https://images.unsplash.com/photo-1501139083538-0139583c060f?w=300", hintText: "時間が経過して次に起こる" },
-    { word: "fundamental", reading: "ファンダメンタル", options: ["基本的な", "応用的な", "一時的な", "例外的な"], answer: 0, img: "https://images.unsplash.com/photo-1513542789411-b6a5d4f31634?w=300", hintText: "全体の土台となる最も根幹の" },
-    { word: "significant", reading: "シグニフィカント", options: ["重大な", "小さな", "無意味な", "偶然の"], answer: 0, img: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=300", hintText: "大きなインパクトと影響を与える" },
-    { word: "diversity", reading: "ダイバーシティ", options: ["統一", "多様性", "孤独", "競争"], answer: 1, img: "https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=300", hintText: "多様な人種や個性が共存すること" }
+    { word: "sustainable", reading: "サステナブル", options: ["一時の", "危険な", "持続可能な", "急速な"], answer: 2, img: "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=600", hintText: "自然環境を守り将来に渡り維持できる" },
+    { word: "innovative", reading: "イノベーティブ", options: ["革新的な", "伝統的な", "退屈な", "複雑な"], answer: 0, img: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=600", hintText: "先端技術や新しい着想に満ちた" },
+    { word: "contribute", reading: "コントリビュー ト", options: ["無視する", "貢献する", "対立する", "減少する"], answer: 1, img: "https://images.unsplash.com/photo-1559027615-cd4628902d4a?w=600", hintText: "社会や人のために役立つ支援をする" },
+    { word: "crucial", reading: "クルーシャル", options: ["極めて重要な", "些細な", "危険な", "曖昧な"], answer: 0, img: "https://images.unsplash.com/photo-1509228468518-180dd4864904?w=600", hintText: "勝敗や成否を分ける決定的な" },
+    { word: "acquire", reading: "アクワイア", options: ["手に入れる", "失う", "延期する", "避ける"], answer: 0, img: "https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?w=600", hintText: "知識や資格を努力して自分のものにする" },
+    { word: "perspective", reading: "パースペクティブ", options: ["距離", "視点・考え方", "感情", "目標"], answer: 1, img: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600", hintText: "物事を見つめる様々な角度・視野" },
+    { word: "subsequent", reading: "サブシクウェント", options: ["以前の", "その後の", "同時期の", "永遠の"], answer: 1, img: "https://images.unsplash.com/photo-1501139083538-0139583c060f?w=600", hintText: "時間が経過して次に起こる" },
+    { word: "fundamental", reading: "ファンダメンタル", options: ["基本的な", "応用的な", "一時的な", "例外的な"], answer: 0, img: "https://images.unsplash.com/photo-1513542789411-b6a5d4f31634?w=600", hintText: "全体の土台となる最も根幹の" },
+    { word: "significant", reading: "シグニフィカント", options: ["重大な", "小さな", "無意味な", "偶然の"], answer: 0, img: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=600", hintText: "大きなインパクトと影響を与える" },
+    { word: "diversity", reading: "ダイバーシティ", options: ["統一", "多様性", "孤独", "競争"], answer: 1, img: "https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=600", hintText: "多様な人種や個性が共存すること" }
   ]
 };
 
@@ -576,19 +573,21 @@ function showHint(q) {
   const imgEl = document.getElementById("hintImg");
   imgEl.src = q.img;
   imgEl.onerror = () => {
-    imgEl.src = "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=300";
+    imgEl.src = "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=600";
   };
   document.getElementById("hintCaption").innerText = q.hintText;
 
-  if (!answered) playHintSound();
+  // 5秒経過のヒント表示と同時に英語の単語を自動で読み上げる
+  speakWord(q.word);
 }
 
 function checkAnswer(selectedIndex) {
-  initAudio(); // ユーザーのタップ時に確実にオーディオをアンロック
+  initAudio();
   
   if (answered) return;
   answered = true;
   clearInterval(timerInterval);
+  window.speechSynthesis.cancel(); // 読み上げ中であればストップ
 
   const q = testQuestions[currentQuestionIndex];
   const buttons = document.querySelectorAll(".option-btn");
