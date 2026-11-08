@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>英単語マスター - 音声読み上げ＆大画面ヒント版</title>
+  <title>英単語マスター - 修正完全版</title>
   <style>
     :root {
       --primary: #4f46e5;
@@ -415,13 +415,12 @@ function initAudio() {
   }
 }
 
-// 英語単語の自動音声読み上げ機能（Web Speech API）
 function speakWord(word) {
   if ('speechSynthesis' in window) {
-    window.speechSynthesis.cancel(); // 連続再生のバッティングを防ぐ
+    window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(word);
     utterance.lang = 'en-US';
-    utterance.rate = 0.9; // 少し聞き取りやすい速度
+    utterance.rate = 0.9;
     window.speechSynthesis.speak(utterance);
   }
 }
@@ -458,6 +457,7 @@ function playWrongSound() {
   osc.stop(audioCtx.currentTime + 0.4);
 }
 
+// 全学年分の個別単語データベース
 const wordDatabase = {
   jh1: [
     { word: "apple", reading: "アップル", options: ["りんご", "みかん", "バナナ", "ぶどう"], answer: 0, img: "https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=600", hintText: "赤い果物" },
@@ -469,12 +469,50 @@ const wordDatabase = {
     { word: "sing", reading: "シング", options: ["話す", "書く", "歌う", "聞く"], answer: 2, img: "https://images.unsplash.com/photo-1516280440614-37939bbacd81?w=600", hintText: "マイクや声で曲を奏でる" },
     { word: "water", reading: "ウォーター", options: ["水", "牛乳", "お茶", "ジュース"], answer: 0, img: "https://images.unsplash.com/photo-1548839140-29a749e1bc4e?w=600", hintText: "生き物に不可欠な透明な液体" },
     { word: "friend", reading: "フレンド", options: ["先生", "友達", "家族", "生徒"], answer: 1, img: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=600", hintText: "仲良く過ごす大切な存在" },
-    { word: "school", reading: "スクール", options: ["病院", "公園", "学校", "駅"], answer: 2, img: "https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=600", hintText: "校舎で仲間と学ぶ場所" }
+    { word: "school", reading: "スクール", options: ["病院", "公園", "学校", "駅"], answer: 2, img: "https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=600", hintText: "校舎で仲間と学ぶ場所" },
+    { word: "dog", reading: "ドッグ", options: ["犬", "猫", "豚", "馬"], answer: 0, img: "https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=600", hintText: "ワンと鳴く忠実な動物" },
+    { word: "sun", reading: "サン", options: ["月", "星", "太陽", "地球"], answer: 2, img: "https://images.unsplash.com/photo-1508614589041-895b88991e3e?w=600", hintText: "空で光り輝く熱の源" }
+  ],
+  jh2: [
+    { word: "study", reading: "スタディ", options: ["勉強する", "遊ぶ", "料理する", "歌う"], answer: 0, img: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=600", hintText: "机に向かって知識を得る" },
+    { word: "future", reading: "フューチャー", options: ["過去", "未来", "現在", "昨日"], answer: 1, img: "https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=600", hintText: "これから来る時間" },
+    { word: "popular", reading: "ポピュラー", options: ["静かな", "人気のある", "暗い", "古い"], answer: 1, img: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600", hintText: "みんなに愛される" },
+    { word: "important", reading: "インポータント", options: ["大切な", "つまらない", "簡単な", "冷たい"], answer: 0, img: "https://images.unsplash.com/photo-1493612276216-ee3925520721?w=600", hintText: "価値が高くて外せない" },
+    { word: "science", reading: "サイエンス", options: ["社会", "科学", "音楽", "国語"], answer: 1, img: "https://images.unsplash.com/photo-1507413245164-6160d8298b31?w=600", hintText: "実験や自然の法則を学ぶ" },
+    { word: "travel", reading: "トラベル", options: ["旅行する", "働く", "寝る", "隠れる"], answer: 0, img: "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=600", hintText: "遠くに出かける" },
+    { word: "different", reading: "ディファレント", options: ["同じ", "異なる", "新しい", "古い"], answer: 1, img: "https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=600", hintText: "違いがある様子" },
+    { word: "language", reading: "ラングリッジ", options: ["言語", "数字", "音楽", "色"], answer: 0, img: "https://images.unsplash.com/photo-1455390582262-044cdead277a?w=600", hintText: "言葉や方言の総称" },
+    { word: "practice", reading: "プラクティス", options: ["練習する", "忘れる", "休む", "壊す"], answer: 0, img: "https://images.unsplash.com/photo-1517649763962-0c623066013b?w=600", hintText: "上達するために繰り返す" },
+    { word: "problem", reading: "プロブレム", options: ["答え", "問題", "成功", "理由"], answer: 1, img: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=600", hintText: "解決すべき事柄" }
+  ],
+  jh3: [
+    { word: "protect", reading: "プロテクト", options: ["破壊する", "無視する", "保護する", "攻撃する"], answer: 2, img: "https://images.unsplash.com/photo-1508873696983-2df5c92091c7?w=600", hintText: "危険から守る" },
+    { word: "global", reading: "グローバル", options: ["地元の", "地球規模の", "小さな", "個人的な"], answer: 1, img: "https://images.unsplash.com/photo-1614730321146-b6fa6a46bcb4?w=600", hintText: "世界全体にかかわる" },
+    { word: "create", reading: "クリエイト", options: ["創造する", "壊す", "買う", "捨てる"], answer: 0, img: "https://images.unsplash.com/photo-1455849318743-b2233052fcff?w=600", hintText: "新しく作り出す" },
+    { word: "environment", reading: "エンバイロメント", options: ["環境", "経済", "政治", "教育"], answer: 0, img: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600", hintText: "自然や周囲の状況" },
+    { word: "experience", reading: "エクスペリエンス", options: ["経験", "計画", "予想", "失敗"], answer: 0, img: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=600", hintText: "実際に体験したこと" },
+    { word: "success", reading: "サクセス", options: ["失敗", "成功", "偶然", "練習"], answer: 1, img: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=600", hintText: "目的を達成すること" },
+    { word: "available", reading: "アベイラブル", options: ["利用できる", "忙しい", "不可能である", "古い"], answer: 0, img: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=600", hintText: "いつでも使える状態の" },
+    { word: "influence", reading: "インフルエンス", options: ["影響する", "従う", "妨げる", "無視する"], answer: 0, img: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=600", hintText: "他に作用を及ぼす" },
+    { word: "include", reading: "インクルード", options: ["含む", "除く", "隠す", "配る"], answer: 0, img: "https://images.unsplash.com/photo-1584438784894-089d6a62b8fa?w=600", hintText: "中に含んでいる" },
+    { word: "improve", reading: "インプルーブ", options: ["悪化させる", "改善する", "始める", "終える"], answer: 1, img: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=600", hintText: "より良くする" }
+  ],
+  hs1: [
+    { word: "economy", reading: "エコノミー", options: ["生態系", "経済", "地理", "政治"], answer: 1, img: "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=600", hintText: "お金やモノの流れ" },
+    { word: "explore", reading: "エクスプローラー", options: ["探検する", "説明する", "無視する", "輸出する"], answer: 0, img: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=600", hintText: "未知の場所を調べる" },
+    { word: "efficient", reading: "エフィシエント", options: ["効率的な", "無駄な", "怠惰な", "複雑な"], answer: 0, img: "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?w=600", hintText: "無駄なくテキパキ進む" },
+    { word: "benefit", reading: "ベネフィット", options: ["利益・恩恵", "損害", "負担", "義務"], answer: 0, img: "https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?w=600", hintText: "自分にとって良いこと" },
+    { word: "approach", reading: "アプローチ", options: ["接近・方法", "逃走", "出発", "失敗"], answer: 0, img: "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=600", hintText: "近づく方法や手段" },
+    { word: "challenge", reading: "チャレンジ", options: ["挑戦", "服従", "逃避", "安息"], answer: 0, img: "https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?w=600", hintText: "困難な課題に挑むこと" },
+    { word: "frequent", reading: "フリークエント", options: ["頻繁な", "稀な", "突然の", "わずかな"], answer: 0, img: "https://images.unsplash.com/photo-1501139083538-0139583c060f?w=600", hintText: "何度も繰り返し起こる" },
+    { word: "feature", reading: "フィーチャー", options: ["特徴", "欠点", "結果", "原因"], answer: 0, img: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=600", hintText: "目立った特色や長所" },
+    { word: "function", reading: "ファンクション", options: ["機能・役割", "故障", "重さ", "色"], answer: 0, img: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=600", hintText: "果たすべき働き" },
+    { word: "policy", reading: "ポリシー", options: ["政策・方針", "偶然", "冗談", "迷路"], answer: 0, img: "https://images.unsplash.com/photo-1450133064473-71024230f91b?w=600", hintText: "組織が決めた方針" }
   ],
   hs2: [
     { word: "sustainable", reading: "サステナブル", options: ["一時の", "危険な", "持続可能な", "急速な"], answer: 2, img: "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=600", hintText: "自然環境を守り将来に渡り維持できる" },
     { word: "innovative", reading: "イノベーティブ", options: ["革新的な", "伝統的な", "退屈な", "複雑な"], answer: 0, img: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=600", hintText: "先端技術や新しい着想に満ちた" },
-    { word: "contribute", reading: "コントリビュー ト", options: ["無視する", "貢献する", "対立する", "減少する"], answer: 1, img: "https://images.unsplash.com/photo-1559027615-cd4628902d4a?w=600", hintText: "社会や人のために役立つ支援をする" },
+    { word: "contribute", reading: "コントリビュート", options: ["無視する", "貢献する", "対立する", "減少する"], answer: 1, img: "https://images.unsplash.com/photo-1559027615-cd4628902d4a?w=600", hintText: "社会や人のために役立つ支援をする" },
     { word: "crucial", reading: "クルーシャル", options: ["極めて重要な", "些細な", "危険な", "曖昧な"], answer: 0, img: "https://images.unsplash.com/photo-1509228468518-180dd4864904?w=600", hintText: "勝敗や成否を分ける決定的な" },
     { word: "acquire", reading: "アクワイア", options: ["手に入れる", "失う", "延期する", "避ける"], answer: 0, img: "https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?w=600", hintText: "知識や資格を努力して自分のものにする" },
     { word: "perspective", reading: "パースペクティブ", options: ["距離", "視点・考え方", "感情", "目標"], answer: 1, img: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600", hintText: "物事を見つめる様々な角度・視野" },
@@ -482,13 +520,20 @@ const wordDatabase = {
     { word: "fundamental", reading: "ファンダメンタル", options: ["基本的な", "応用的な", "一時的な", "例外的な"], answer: 0, img: "https://images.unsplash.com/photo-1513542789411-b6a5d4f31634?w=600", hintText: "全体の土台となる最も根幹の" },
     { word: "significant", reading: "シグニフィカント", options: ["重大な", "小さな", "無意味な", "偶然の"], answer: 0, img: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=600", hintText: "大きなインパクトと影響を与える" },
     { word: "diversity", reading: "ダイバーシティ", options: ["統一", "多様性", "孤独", "競争"], answer: 1, img: "https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=600", hintText: "多様な人種や個性が共存すること" }
+  ],
+  hs3: [
+    { word: "abundant", reading: "アバンダント", options: ["乏しい", "豊富な", "急激な", "明確な"], answer: 1, img: "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=600", hintText: "たくさんある様子" },
+    { word: "inevitable", reading: "イネビタブル", options: ["避けられない", "偶然の", "望ましい", "不確かな"], answer: 0, img: "https://images.unsplash.com/photo-1501139083538-0139583c060f?w=600", hintText: "必ず起こる運命的な" },
+    { word: "reluctant", reading: "リラクタント", options: ["気乗りしない", "熱心な", "勇敢な", "素早い"], answer: 0, img: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=600", hintText: "乗り気ではない様子" },
+    { word: "ambiguous", reading: "アンビギュアス", options: ["曖昧な", "明確な", "単調な", "正確な"], answer: 0, img: "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=600", hintText: "どちらとも取れる様子" },
+    { word: "coherent", reading: "コヒレント", options: ["一貫した", "矛盾した", "突飛な", "不規則な"], answer: 0, img: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=600", hintText: "筋がしっかりと通っている" },
+    { word: "deteriorate", reading: "ディテリオレート", options: ["悪化する", "改善する", "回復する", "発展する"], answer: 0, img: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=600", hintText: "状態や品質が落ちる" },
+    { word: "feasible", reading: "フィージブル", options: ["実現可能な", "不可能な", "無謀な", "架空の"], answer: 0, img: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=600", hintText: "実行できそうな" },
+    { word: "meticulous", reading: "メティキュラス", options: ["細心の", "大雑把な", "怠惰な", "無愛想な"], answer: 0, img: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=600", hintText: "非常に入念で細かいところまで気を使う" },
+    { word: "notorious", reading: "ノトリアス", options: ["悪名高い", "有名な", "控えめな", "高潔な"], answer: 0, img: "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=600", hintText: "悪い意味で広く知られている" },
+    { word: "resilient", reading: "リジリエント", options: ["回復力のある", "脆い", "硬い", "弱い"], answer: 0, img: "https://images.unsplash.com/photo-1517649763962-0c623066013b?w=600", hintText: "困難からすぐに立ち直る" }
   ]
 };
-
-wordDatabase.jh2 = wordDatabase.hs2;
-wordDatabase.jh3 = wordDatabase.hs2;
-wordDatabase.hs1 = wordDatabase.hs2;
-wordDatabase.hs3 = wordDatabase.hs2;
 
 let currentLevel = 'hs2';
 let testQuestions = [];
@@ -500,13 +545,15 @@ let timeLeft = 5;
 let answered = false;
 
 function changeLevel() {
-  currentLevel = document.getElementById("levelSelect").value;
+  const selectElem = document.getElementById("levelSelect");
+  currentLevel = selectElem.value;
   startTest();
 }
 
 function startTest() {
-  const pool = [...wordDatabase[currentLevel]];
-  const shuffled = pool.sort(() => Math.random() - 0.5);
+  clearInterval(timerInterval);
+  const pool = wordDatabase[currentLevel] || wordDatabase['hs2'];
+  const shuffled = [...pool].sort(() => Math.random() - 0.5);
   testQuestions = shuffled.slice(0, 10);
   
   currentQuestionIndex = 0;
@@ -577,7 +624,6 @@ function showHint(q) {
   };
   document.getElementById("hintCaption").innerText = q.hintText;
 
-  // 5秒経過のヒント表示と同時に英語の単語を自動で読み上げる
   speakWord(q.word);
 }
 
@@ -587,7 +633,7 @@ function checkAnswer(selectedIndex) {
   if (answered) return;
   answered = true;
   clearInterval(timerInterval);
-  window.speechSynthesis.cancel(); // 読み上げ中であればストップ
+  window.speechSynthesis.cancel();
 
   const q = testQuestions[currentQuestionIndex];
   const buttons = document.querySelectorAll(".option-btn");
@@ -663,6 +709,7 @@ function restartTest() {
   startTest();
 }
 
+// 初回起動
 startTest();
 </script>
 </body>
