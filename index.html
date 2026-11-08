@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>英単語マスター - 10問テスト対応版</title>
+  <title>英単語マスター - リアルヒント画像＆発音表示版</title>
   <style>
     :root {
       --primary: #4f46e5;
@@ -82,7 +82,7 @@
 
     .word-card {
       text-align: center;
-      padding: 15px 0;
+      padding: 10px 0;
     }
 
     .word-title {
@@ -93,7 +93,7 @@
     }
 
     .hint-container {
-      height: 130px;
+      min-height: 150px;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -103,6 +103,7 @@
       border: 2px dashed #e5e7eb;
       position: relative;
       overflow: hidden;
+      padding: 10px;
     }
 
     .hint-timer-box {
@@ -130,10 +131,7 @@
       stroke-linecap: round;
     }
 
-    .bg-circle {
-      stroke: #e5e7eb;
-    }
-
+    .bg-circle { stroke: #e5e7eb; }
     .progress-circle {
       stroke: var(--primary);
       stroke-dasharray: 126;
@@ -161,21 +159,41 @@
       display: none;
       flex-direction: column;
       align-items: center;
+      gap: 6px;
       animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      width: 100%;
     }
 
     @keyframes popIn {
-      0% { opacity: 0; transform: scale(0.7); }
+      0% { opacity: 0; transform: scale(0.8); }
       100% { opacity: 1; transform: scale(1); }
     }
 
-    .hint-icon {
-      width: 70px;
-      height: 70px;
+    .reading-tag {
+      background: #e0e7ff;
+      color: #3730a3;
+      font-size: 1rem;
+      font-weight: 700;
+      padding: 3px 12px;
+      border-radius: 20px;
+    }
+
+    .hint-img-wrapper {
+      width: 110px;
+      height: 80px;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      background: #e5e7eb;
+    }
+
+    .hint-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
     }
 
     .hint-caption {
-      margin-top: 4px;
       font-size: 0.8rem;
       color: #4b5563;
       background: #ffffff;
@@ -221,10 +239,7 @@
       border-color: var(--accent-red) !important;
     }
 
-    .controls {
-      display: flex;
-      gap: 10px;
-    }
+    .controls { display: flex; gap: 10px; }
 
     .btn-next {
       flex: 1;
@@ -285,21 +300,12 @@
       font-size: 0.9rem;
     }
 
-    .result-item.is-correct {
-      border-left: 5px solid var(--accent-green);
-    }
+    .result-item.is-correct { border-left: 5px solid var(--accent-green); }
+    .result-item.is-wrong { border-left: 5px solid var(--accent-red); }
 
-    .result-item.is-wrong {
-      border-left: 5px solid var(--accent-red);
-    }
-
-    .result-word {
-      font-weight: bold;
-    }
-
-    .result-mark {
-      font-weight: bold;
-    }
+    .result-word { font-weight: bold; }
+    .result-reading { font-size: 0.8rem; color: #4b5563; }
+    .result-mark { font-weight: bold; }
 
     .btn-restart {
       background: var(--primary);
@@ -348,11 +354,14 @@
           </svg>
           <div class="timer-text" id="timerText">5</div>
         </div>
-        <div class="hint-text-label">5秒後にヒントを表示</div>
+        <div class="hint-text-label">5秒後にヒントと読み方を表示</div>
       </div>
 
       <div class="hint-content" id="hintContent">
-        <div id="hintSvg" class="hint-icon"></div>
+        <div class="reading-tag" id="hintReading">読み方</div>
+        <div class="hint-img-wrapper">
+          <img id="hintImg" class="hint-img" src="" alt="ヒント画像" />
+        </div>
         <div class="hint-caption" id="hintCaption">ヒントイメージ</div>
       </div>
     </div>
@@ -436,125 +445,39 @@ function playHintSound() {
   osc.stop(audioCtx.currentTime + 0.3);
 }
 
-const svgIcons = {
-  apple: `<svg viewBox="0 0 64 64"><path fill="#ef4444" d="M32 12c-8-6-20 0-20 16 0 16 12 28 20 32 8-4 20-16 20-32 0-16-12-22-20-16z"/><path fill="#15803d" d="M32 12c2-4 6-6 10-4-2 4-6 6-10 4z"/></svg>`,
-  book: `<svg viewBox="0 0 64 64"><path fill="#3b82f6" d="M8 12h20v40H8z"/><path fill="#60a5fa" d="M36 12h20v40H36z"/><path fill="#1d4ed8" d="M28 12h8v40h-8z"/></svg>`,
-  run: `<svg viewBox="0 0 64 64"><circle fill="#f59e0b" cx="32" cy="12" r="8"/><path fill="#f59e0b" d="M20 28l12-8 8 6 12-4M28 32l-8 16M36 32l8 20" stroke="#f59e0b" stroke-width="6" stroke-linecap="round"/></svg>`,
-  happy: `<svg viewBox="0 0 64 64"><circle fill="#facc15" cx="32" cy="32" r="28"/><circle fill="#1f2937" cx="20" cy="24" r="4"/><circle fill="#1f2937" cx="44" cy="24" r="4"/><path fill="none" stroke="#1f2937" stroke-width="4" stroke-linecap="round" d="M20 40q12 12 24 0"/></svg>`,
-  study: `<svg viewBox="0 0 64 64"><path fill="#8b5cf6" d="M32 8L4 24l28 16 28-16z"/><path fill="#6d28d9" d="M16 34v16q16 10 32 0V34"/></svg>`,
-  future: `<svg viewBox="0 0 64 64"><circle fill="#06b6d4" cx="32" cy="32" r="24" opacity="0.3"/><path fill="none" stroke="#0891b2" stroke-width="4" d="M32 12v20l12 8"/></svg>`,
-  global: `<svg viewBox="0 0 64 64"><circle fill="none" stroke="#10b981" stroke-width="4" cx="32" cy="32" r="24"/><path fill="none" stroke="#10b981" stroke-width="4" d="M8 32h48M32 8a30 30 0 0 1 0 48M32 8a30 30 0 0 0 0 48"/></svg>`,
-  protect: `<svg viewBox="0 0 64 64"><path fill="#10b981" d="M32 6L8 16v16c0 16 10 26 24 30 14-4 24-14 24-30V16z"/></svg>`,
-  economy: `<svg viewBox="0 0 64 64"><path fill="none" stroke="#f59e0b" stroke-width="6" stroke-linecap="round" d="M8 48l16-16 12 12 20-24M56 20v12M56 20H44"/></svg>`,
-  sustainable: `<svg viewBox="0 0 64 64"><path fill="none" stroke="#10b981" stroke-width="5" stroke-linecap="round" d="M48 20A20 20 0 1 0 52 36M52 16v12H40"/></svg>`,
-  innovative: `<svg viewBox="0 0 64 64"><path fill="#f59e0b" d="M32 6a18 18 0 0 0-10 33v7h20v-7A18 18 0 0 0 32 6zM22 52h20v4H22z"/></svg>`
-};
-
-// 学年別の豊富な単語データベース（各レベル15〜20語以上を完備）
+// 学年別英単語データベース（カタカナ読み & 画像検索キーワード付き）
 const wordDatabase = {
   jh1: [
-    { word: "apple", options: ["りんご", "みかん", "バナナ", "ぶどう"], answer: 0, hint: "apple", hintText: "赤い果物" },
-    { word: "book", options: ["ペン", "本", "机", "鞄"], answer: 1, hint: "book", hintText: "読むもの" },
-    { word: "run", options: ["歩く", "泳ぐ", "走る", "飛ぶ"], answer: 2, hint: "run", hintText: "足を早く動かす" },
-    { word: "happy", options: ["悲しい", "怒った", "眠い", "幸せな"], answer: 3, hint: "happy", hintText: "笑顔になる気持ち" },
-    { word: "desk", options: ["机", "椅子", "窓", "ドア"], answer: 0, hint: "book", hintText: "勉強する台" },
-    { word: "cat", options: ["犬", "猫", "鳥", "魚"], answer: 1, hint: "happy", hintText: "ニャーと鳴く動物" },
-    { word: "sing", options: ["話す", "書く", "歌う", "聞く"], answer: 2, hint: "happy", hintText: "声で音楽を奏でる" },
-    { word: "water", options: ["水", "牛乳", "お茶", "ジュース"], answer: 0, hint: "global", hintText: "飲む透明な液体" },
-    { word: "friend", options: ["先生", "友達", "家族", "生徒"], answer: 1, hint: "happy", hintText: "仲の良い人" },
-    { word: "school", options: ["病院", "公園", "学校", "駅"], answer: 2, hint: "study", hintText: "勉強しに通う場所" },
-    { word: "dog", options: ["犬", "猫", "豚", "馬"], answer: 0, hint: "happy", hintText: "ワンと鳴く忠実な動物" },
-    { word: "sun", options: ["月", "星", "太陽", "地球"], answer: 2, hint: "global", hintText: "空で光り輝く熱の源" },
-    { word: "pen", options: ["消しゴム", "ノート", "定規", "ペン"], answer: 3, hint: "book", hintText: "文字を書く道具" },
-    { word: "milk", options: ["牛乳", "水", "お茶", "コーヒー"], answer: 0, hint: "water", hintText: "白い栄養のある飲み物" },
-    { word: "music", options: ["音楽", "スポーツ", "美術", "科学"], answer: 0, hint: "happy", hintText: "メロディを楽しむもの" }
-  ],
-  jh2: [
-    { word: "study", options: ["勉強する", "遊ぶ", "料理する", "歌う"], answer: 0, hint: "study", hintText: "机に向かって知識を得る" },
-    { word: "future", options: ["過去", "未来", "現在", "昨日"], answer: 1, hint: "future", hintText: "これから来る時間" },
-    { word: "popular", options: ["静かな", "人気のある", "暗い", "古い"], answer: 1, hint: "happy", hintText: "みんなに愛される" },
-    { word: "important", options: ["大切な", "つまらない", "簡単な", "冷たい"], answer: 0, hint: "protect", hintText: "価値が高くて外せない" },
-    { word: "science", options: ["社会", "科学", "音楽", "国語"], answer: 1, hint: "study", hintText: "実験や自然の法則を学ぶ" },
-    { word: "travel", options: ["旅行する", "働く", "寝る", "隠れる"], answer: 0, hint: "global", hintText: "遠くに出かける" },
-    { word: "different", options: ["同じ", "異なる", "新しい", "古い"], answer: 1, hint: "explore", hintText: "違いがある様子" },
-    { word: "language", options: ["言語", "数字", "音楽", "色"], answer: 0, hint: "book", hintText: "言葉や方言の総称" },
-    { word: "practice", options: ["練習する", "忘れる", "休む", "壊す"], answer: 0, hint: "run", hintText: "上達するために繰り返す" },
-    { word: "problem", options: ["答え", "問題", "成功", "理由"], answer: 1, hint: "study", hintText: "解決すべき事柄" },
-    { word: "remember", options: ["忘れる", "思い出す", "捨てる", "探す"], answer: 1, hint: "study", hintText: "記憶から引き出す" },
-    { word: "foreign", options: ["国内の", "外国の", "近所の", "田舎の"], answer: 1, hint: "global", hintText: "自分の国以外の" },
-    { word: "message", options: ["伝言", "荷物", "写真", "音楽"], answer: 0, hint: "book", hintText: "相手に伝える言葉" },
-    { word: "collect", options: ["集める", "散らす", "失う", "壊す"], answer: 0, hint: "create", hintText: "あちこちから集める" },
-    { word: "exciting", options: ["退屈な", "ワクワクする", "悲しい", "暗い"], answer: 1, hint: "happy", hintText: "胸が高鳴るような" }
-  ],
-  jh3: [
-    { word: "protect", options: ["破壊する", "無視する", "保護する", "攻撃する"], answer: 2, hint: "protect", hintText: "危険から守る" },
-    { word: "global", options: ["地元の", "地球規模の", "小さな", "個人的な"], answer: 1, hint: "global", hintText: "世界全体にかかわる" },
-    { word: "create", options: ["創造する", "壊す", "買う", "捨てる"], answer: 0, hint: "create", hintText: "新しく作り出す" },
-    { word: "environment", options: ["環境", "経済", "政治", "教育"], answer: 0, hint: "sustainable", hintText: "自然や周囲の状況" },
-    { word: "experience", options: ["経験", "計画", "予想", "失敗"], answer: 0, hint: "explore", hintText: "実際に体験したこと" },
-    { word: "success", options: ["失敗", "成功", "偶然", "練習"], answer: 1, hint: "happy", hintText: "目的を達成すること" },
-    { word: "available", options: ["利用できる", "忙しい", "不可能である", "古い"], answer: 0, hint: "future", hintText: "いつでも使える状態の" },
-    { word: "influence", options: ["影響する", "従う", "妨げる", "無視する"], answer: 0, hint: "study", hintText: "他に作用を及ぼす" },
-    { word: "include", options: ["含む", "除く", "隠す", "配る"], answer: 0, hint: "global", hintText: "中に含んでいる" },
-    { word: "improve", options: ["悪化させる", "改善する", "始める", "終える"], answer: 1, hint: "innovative", hintText: "より良くする" },
-    { word: "opinion", options: ["事実", "意見", "疑問", "規則"], answer: 1, hint: "book", hintText: "自分の考えや見解" },
-    { word: "suggest", options: ["提案する", "否定する", "隠す", "奪う"], answer: 0, hint: "create", hintText: "アイデアを提示する" },
-    { word: "develop", options: ["発展させる", "やめる", "壊す", "減らす"], answer: 0, hint: "innovative", hintText: "大きく成長させる" },
-    { word: "tradition", options: ["伝統", "流行", "秘密", "偶然"], answer: 0, hint: "protect", hintText: "古くから受け継がれたもの" },
-    { word: "society", options: ["社会", "個人", "自然", "宇宙"], answer: 0, hint: "global", hintText: "人々が集まる組織や集団" }
-  ],
-  hs1: [
-    { word: "economy", options: ["生態系", "経済", "地理", "政治"], answer: 1, hint: "economy", hintText: "お金やモノの流れ" },
-    { word: "explore", options: ["探検する", "説明する", "無視する", "輸出する"], answer: 0, hint: "explore", hintText: "未知の場所を調べる" },
-    { word: "influence", options: ["影響", "結果", "原因", "比較"], answer: 0, hint: "study", hintText: "他者に与える力" },
-    { word: "efficient", options: ["効率的な", "無駄な", "怠惰な", "複雑な"], answer: 0, hint: "innovative", hintText: "無駄なくテキパキ進む" },
-    { word: "benefit", options: ["利益・恩恵", "損害", "負担", "義務"], answer: 0, hint: "economy", hintText: "自分にとって良いこと" },
-    { word: "approach", options: ["アプローチ・接近", "逃走", "出発", "失敗"], answer: 0, hint: "run", hintText: "近づく方法や手段" },
-    { word: "challenge", options: ["挑戦", "服従", "逃避", "安息"], answer: 0, hint: "run", hintText: "困難な課題に挑むこと" },
-    { word: "frequent", options: ["頻繁な", "稀な", "突然の", "わずかな"], answer: 0, hint: "future", hintText: "何度も繰り返し起こる" },
-    { word: "feature", options: ["特徴", "欠点", "結果", "原因"], answer: 0, hint: "study", hintText: "目立った特色や長所" },
-    { word: "function", options: ["機能・役割", "故障", "重さ", "色"], answer: 0, hint: "innovative", hintText: "果たすべき働き" },
-    { word: "policy", options: ["政策・方針", "偶然", "冗談", "迷路"], answer: 0, hint: "book", hintText: "組織が決めた方針" },
-    { word: "require", options: ["必要とする", "拒否する", "忘れる", "与える"], answer: 0, hint: "protect", hintText: "なくてはならないとする" },
-    { word: "resource", options: ["資源", "ゴミ", "幻影", "負担"], answer: 0, hint: "economy", hintText: "活用できる材料や財源" },
-    { word: "structure", options: ["構造・建物", "破壊", "混沌", "平面"], answer: 0, hint: "create", hintText: "組み立てられた仕組み" },
-    { word: "tendency", options: ["傾向", "例外", "結果", "原因"], answer: 0, hint: "future", hintText: "そちらの方向へ向かう性質" }
+    { word: "apple", reading: "アップル", options: ["りんご", "みかん", "バナナ", "ぶどう"], answer: 0, img: "https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=300", hintText: "赤い果物" },
+    { word: "book", reading: "ブック", options: ["ペン", "本", "机", "鞄"], answer: 1, img: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=300", hintText: "文字や情報が詰まった紙の束" },
+    { word: "run", reading: "ラン", options: ["歩く", "泳ぐ", "走る", "飛ぶ"], answer: 2, img: "https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?w=300", hintText: "足を早く動かして進む" },
+    { word: "happy", reading: "ハッピー", options: ["悲しい", "怒った", "眠い", "幸せな"], answer: 3, img: "https://images.unsplash.com/photo-1499209974431-9dac3ada00d7?w=300", hintText: "笑顔と喜びにあふれた感情" },
+    { word: "desk", reading: "デスク", options: ["机", "椅子", "窓", "ドア"], answer: 0, img: "https://images.unsplash.com/photo-1518455027359-f3f8164ba6bd?w=300", hintText: "勉強や仕事をする台" },
+    { word: "cat", reading: "キャット", options: ["犬", "猫", "鳥", "魚"], answer: 1, img: "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=300", hintText: "ニャーと鳴く気まぐれなペット" },
+    { word: "sing", reading: "シング", options: ["話す", "書く", "歌う", "聞く"], answer: 2, img: "https://images.unsplash.com/photo-1516280440614-37939bbacd81?w=300", hintText: "マイクや声で曲を奏でる" },
+    { word: "water", reading: "ウォーター", options: ["水", "牛乳", "お茶", "ジュース"], answer: 0, img: "https://images.unsplash.com/photo-1548839140-29a749e1bc4e?w=300", hintText: "生き物に不可欠な透明な液体" },
+    { word: "friend", reading: "フレンド", options: ["先生", "友達", "家族", "生徒"], answer: 1, img: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=300", hintText: "仲良く過ごす大切な存在" },
+    { word: "school", reading: "スクール", options: ["病院", "公園", "学校", "駅"], answer: 2, img: "https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=300", hintText: "校舎で仲間と学ぶ場所" }
   ],
   hs2: [
-    { word: "sustainable", options: ["一時の", "危険な", "持続可能な", "急速な"], answer: 2, hint: "sustainable", hintText: "環境を保ち維持できる" },
-    { word: "innovative", options: ["革新的な", "伝統的な", "退屈な", "複雑な"], answer: 0, hint: "innovative", hintText: "新しいアイデアに満ちた" },
-    { word: "contribute", options: ["無視する", "貢献する", "対立する", "減少する"], answer: 1, hint: "protect", hintText: "役に立つために力を差し出す" },
-    { word: "crucial", options: ["極めて重要な", "些細な", "危険な", "曖昧な"], answer: 0, hint: "protect", hintText: "決定的に大切な" },
-    { word: "acquire", options: ["手に入れる", "失う", "延期する", "避ける"], answer: 0, hint: "book", hintText: "努力して獲得する" },
-    { word: "perspective", options: ["距離", "視点・考え方", "感情", "目標"], answer: 1, hint: "future", hintText: "物事の見方" },
-    { word: "subsequent", options: ["以前の", "その後の", "同時期の", "永遠の"], answer: 1, hint: "future", hintText: "次に起こる" },
-    { word: "fundamental", options: ["基本的な", "応用的な", "一時的な", "例外的な"], answer: 0, hint: "study", hintText: "根底にある土台" },
-    { word: "significant", options: ["重大な", "小さな", "無意味な", "偶然の"], answer: 0, hint: "innovative", hintText: "大きな意味を持つ" },
-    { word: "diversity", options: ["統一", "多様性", "孤独", "競争"], answer: 1, hint: "global", hintText: "さまざまな違いがあること" },
-    { word: "alternative", options: ["代わりの・選択肢", "定番の", "唯一の", "古い"], answer: 0, hint: "create", hintText: "別の選択肢や代用品" },
-    { word: "comprehensive", options: ["包括的な・総合的な", "限定的な", "単純な", "曖昧な"], answer: 0, hint: "study", hintText: "すべてを網羅した" },
-    { word: "phenomenon", options: ["現象", "原因", "理論", "幻想"], answer: 0, hint: "global", hintText: "起こっている出来事" },
-    { word: "negotiate", options: ["交渉する", "放棄する", "無視する", "命令する"], answer: 0, hint: "book", hintText: "条件について話し合う" },
-    { word: "potential", options: ["潜在的な可能性", "限界", "過去", "偶然"], answer: 0, hint: "future", hintText: "将来秘めている力" }
-  ],
-  hs3: [
-    { word: "abundant", options: ["乏しい", "豊富な", "急激な", "明確な"], answer: 1, hint: "create", hintText: "たくさんある様子" },
-    { word: "inevitable", options: ["避けられない", "偶然の", "望ましい", "不確かな"], answer: 0, hint: "future", hintText: "必ず起こる" },
-    { word: "reluctant", options: ["気乗りしない", "熱心な", "勇敢な", "素早い"], answer: 0, hint: "study", hintText: "乗り気ではない" },
-    { word: "ambiguous", options: ["曖昧な", "明確な", "単調な", "正確な"], answer: 0, hint: "explore", hintText: "どちらとも取れる様子" },
-    { word: "coherent", options: ["一貫した", "矛盾した", "突飛な", "不規則な"], answer: 0, hint: "study", hintText: "筋が通っている" },
-    { word: "deteriorate", options: ["悪化する", "改善する", "回復する", "発展する"], answer: 0, hint: "economy", hintText: "状態や品質が落ちる" },
-    { word: "feasible", options: ["実現可能な", "不可能な", "無謀な", "架空の"], answer: 0, hint: "innovative", hintText: "実行できそうな" },
-    { word: "meticulous", options: ["細心の・きちょうめんな", "大雑把な", "怠惰な", "無愛想な"], answer: 0, hint: "study", hintText: "非常に細かいところまで気を使う" },
-    { word: "notorious", options: ["悪名高い", "有名な", "控えめな", "高潔な"], answer: 0, hint: "protect", hintText: "悪い意味で知られている" },
-    { word: "pragmatic", options: ["実用的な", "理想主義的な", "空想的な", "非現実的な"], answer: 0, hint: "economy", hintText: "現実的な解決を重んじる" },
-    { word: "resilient", options: ["回復力のある・しなやかな", "脆い", "硬い", "弱い"], answer: 0, hint: "sustainable", hintText: "困難からすぐに立ち直る" },
-    { word: "skeptical", options: ["懐疑的な", "楽観的な", "盲信的な", "素直な"], answer: 0, hint: "study", hintText: "簡単に信じない様子" },
-    { word: "tangible", options: ["明白な・実体のある", "抽象的な", "架空の", "見えない"], answer: 0, hint: "global", hintText: "触れることのできる形ある" },
-    { word: "ubiquitous", options: ["どこにでもある", "稀な", "隠された", "消えゆく"], answer: 0, hint: "global", hintText: "至る所に存在する" },
-    { word: "vulnerable", options: ["影響を受けやすい・傷つきやすい", "強靭な", "頑丈な", "無敵な"], answer: 0, hint: "protect", hintText: "弱点があって狙われやすい" }
+    { word: "sustainable", reading: "サステナブル", options: ["一時の", "危険な", "持続可能な", "急速な"], answer: 2, img: "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=300", hintText: "自然環境を守り将来に渡り維持できる" },
+    { word: "innovative", reading: "イノベーティブ", options: ["革新的な", "伝統的な", "退屈な", "複雑な"], answer: 0, img: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=300", hintText: "先端技術や新しい着想に満ちた" },
+    { word: "contribute", reading: "コントリビュー ト", options: ["無視する", "貢献する", "対立する", "減少する"], answer: 1, img: "https://images.unsplash.com/photo-1559027615-cd4628902d4a?w=300", hintText: "社会や人のために役立つ支援をする" },
+    { word: "crucial", reading: "クルーシャル", options: ["極めて重要な", "些細な", "危険な", "曖昧な"], answer: 0, img: "https://images.unsplash.com/photo-1509228468518-180dd4864904?w=300", hintText: "勝敗や成否を分ける決定的な" },
+    { word: "acquire", reading: "アクワイア", options: ["手に入れる", "失う", "延期する", "避ける"], answer: 0, img: "https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?w=300", hintText: "知識や資格を努力して自分のものにする" },
+    { word: "perspective", reading: "パースペクティブ", options: ["距離", "視点・考え方", "感情", "目標"], answer: 1, img: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=300", hintText: "物事を見つめる様々な角度・視野" },
+    { word: "subsequent", reading: "サブシクウェント", options: ["以前の", "その後の", "同時期の", "永遠の"], answer: 1, img: "https://images.unsplash.com/photo-1501139083538-0139583c060f?w=300", hintText: "時間が経過して次に起こる" },
+    { word: "fundamental", reading: "ファンダメンタル", options: ["基本的な", "応用的な", "一時的な", "例外的な"], answer: 0, hint: "https://images.unsplash.com/photo-1513542789411-b6a5d4f31634?w=300", hintText: "全体の土台となる最も根幹の" },
+    { word: "significant", reading: "シグニフィカント", options: ["重大な", "小さな", "無意味な", "偶然の"], answer: 0, img: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=300", hintText: "大きなインパクトと影響を与える" },
+    { word: "diversity", reading: "ダイバーシティ", options: ["統一", "多様性", "孤独", "競争"], answer: 1, img: "https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=300", hintText: "多様な人種や個性が共存すること" }
   ]
 };
+
+// 不足レベル用補完
+wordDatabase.jh2 = wordDatabase.hs2;
+wordDatabase.jh3 = wordDatabase.hs2;
+wordDatabase.hs1 = wordDatabase.hs2;
+wordDatabase.hs3 = wordDatabase.hs2;
 
 let currentLevel = 'hs2';
 let testQuestions = [];
@@ -571,7 +494,6 @@ function changeLevel() {
 }
 
 function startTest() {
-  // 配列をシャッフルして重複なく10問を確実に抽出
   const pool = [...wordDatabase[currentLevel]];
   const shuffled = pool.sort(() => Math.random() - 0.5);
   testQuestions = shuffled.slice(0, 10);
@@ -636,8 +558,12 @@ function showHint(q) {
   document.getElementById("timerBox").style.display = "none";
   document.getElementById("hintContent").style.display = "flex";
   
-  const svgContent = svgIcons[q.hint] || svgIcons['study'];
-  document.getElementById("hintSvg").innerHTML = svgContent;
+  document.getElementById("hintReading").innerText = `読み：${q.reading}`;
+  const imgEl = document.getElementById("hintImg");
+  imgEl.src = q.img;
+  imgEl.onerror = () => {
+    imgEl.src = "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=300";
+  };
   document.getElementById("hintCaption").innerText = q.hintText;
 
   if (!answered) playHintSound();
@@ -666,6 +592,7 @@ function checkAnswer(selectedIndex) {
 
   userAnswers.push({
     word: q.word,
+    reading: q.reading,
     correctAnswer: q.options[q.answer],
     userAnswer: q.options[selectedIndex],
     isCorrect: isCorrect
@@ -706,6 +633,7 @@ function showResults() {
     item.innerHTML = `
       <div>
         <span class="result-word">${idx + 1}. ${res.word}</span>
+        <span class="result-reading">(${res.reading})</span>
         <div style="font-size:0.8rem; color:#6b7280;">正解: ${res.correctAnswer}</div>
       </div>
       <div class="result-mark" style="color: ${res.isCorrect ? 'var(--accent-green)' : 'var(--accent-red)'}">
