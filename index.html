@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>英単語マスター - 中1〜高3対応</title>
+  <title>英単語マスター - 10問テスト対応版</title>
   <style>
     :root {
       --primary: #4f46e5;
@@ -13,7 +13,6 @@
       --text-color: #1f2937;
       --accent-green: #10b981;
       --accent-red: #ef4444;
-      --accent-yellow: #f59e0b;
     }
 
     * {
@@ -42,7 +41,7 @@
       padding: 25px;
       display: flex;
       flex-direction: column;
-      gap: 20px;
+      gap: 15px;
     }
 
     header {
@@ -72,18 +71,18 @@
 
     .stats-bar {
       display: flex;
-      justify-content: space-around;
+      justify-content: space-between;
       background: #eef2ff;
-      padding: 10px;
+      padding: 10px 15px;
       border-radius: 12px;
       font-weight: bold;
       color: #3730a3;
-      font-size: 0.9rem;
+      font-size: 0.95rem;
     }
 
     .word-card {
       text-align: center;
-      padding: 20px 0;
+      padding: 15px 0;
     }
 
     .word-title {
@@ -94,7 +93,7 @@
     }
 
     .hint-container {
-      height: 140px;
+      height: 130px;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -110,18 +109,18 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
     }
 
     .timer-circle {
       position: relative;
-      width: 50px;
-      height: 50px;
+      width: 46px;
+      height: 46px;
     }
 
     .timer-circle svg {
-      width: 50px;
-      height: 50px;
+      width: 46px;
+      height: 46px;
       transform: rotate(-90deg);
     }
 
@@ -171,12 +170,12 @@
     }
 
     .hint-icon {
-      width: 80px;
-      height: 80px;
+      width: 70px;
+      height: 70px;
     }
 
     .hint-caption {
-      margin-top: 5px;
+      margin-top: 4px;
       font-size: 0.8rem;
       color: #4b5563;
       background: #ffffff;
@@ -188,13 +187,13 @@
     .options-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 12px;
+      gap: 10px;
     }
 
     .option-btn {
       background: white;
       border: 2px solid #e5e7eb;
-      padding: 14px;
+      padding: 12px;
       border-radius: 14px;
       font-size: 0.95rem;
       font-weight: 600;
@@ -241,8 +240,78 @@
       box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
     }
 
-    .btn-next:hover {
-      background: var(--primary-hover);
+    /* 採点表（結果画面）スタイル */
+    .result-screen {
+      display: none;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .score-summary {
+      text-align: center;
+      background: #eef2ff;
+      padding: 20px;
+      border-radius: 16px;
+    }
+
+    .score-summary h2 {
+      color: var(--primary);
+      font-size: 1.5rem;
+      margin-bottom: 5px;
+    }
+
+    .score-details {
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: #1e1b4b;
+    }
+
+    .result-list {
+      max-height: 250px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding-right: 5px;
+    }
+
+    .result-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 14px;
+      border-radius: 10px;
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      font-size: 0.9rem;
+    }
+
+    .result-item.is-correct {
+      border-left: 5px solid var(--accent-green);
+    }
+
+    .result-item.is-wrong {
+      border-left: 5px solid var(--accent-red);
+    }
+
+    .result-word {
+      font-weight: bold;
+    }
+
+    .result-mark {
+      font-weight: bold;
+    }
+
+    .btn-restart {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 14px;
+      border-radius: 14px;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
     }
   </style>
 </head>
@@ -261,42 +330,59 @@
     </select>
   </header>
 
-  <div class="stats-bar">
-    <div>正解数: <span id="score">0</span></div>
-    <div>連続正解: <span id="streak">0</span></div>
-  </div>
+  <!-- クイズプレイ画面 -->
+  <div id="quizScreen">
+    <div class="stats-bar">
+      <div>進行度: <span id="progressText">1 / 10</span></div>
+      <div>正解数: <span id="scoreText">0</span></div>
+    </div>
 
-  <div class="word-card">
-    <div class="word-title" id="wordTitle">apple</div>
-  </div>
+    <div class="word-card">
+      <div class="word-title" id="wordTitle">apple</div>
+    </div>
 
-  <div class="hint-container">
-    <div class="hint-timer-box" id="timerBox">
-      <div class="timer-circle">
-        <svg>
-          <circle class="bg-circle" cx="25" cy="25" r="20"></circle>
-          <circle class="progress-circle" id="progressCircle" cx="25" cy="25" r="20"></circle>
-        </svg>
-        <div class="timer-text" id="timerText">5</div>
+    <div class="hint-container">
+      <div class="hint-timer-box" id="timerBox">
+        <div class="timer-circle">
+          <svg>
+            <circle class="bg-circle" cx="23" cy="23" r="20"></circle>
+            <circle class="progress-circle" id="progressCircle" cx="23" cy="23" r="20"></circle>
+          </svg>
+          <div class="timer-text" id="timerText">5</div>
+        </div>
+        <div class="hint-text-label">5秒後にヒントを表示</div>
       </div>
-      <div class="hint-text-label">5秒後にヒントを表示</div>
+
+      <div class="hint-content" id="hintContent">
+        <div id="hintSvg" class="hint-icon"></div>
+        <div class="hint-caption" id="hintCaption">ヒントイメージ</div>
+      </div>
     </div>
 
-    <div class="hint-content" id="hintContent">
-      <div id="hintSvg" class="hint-icon"></div>
-      <div class="hint-caption" id="hintCaption">ヒントイメージ</div>
+    <div class="options-grid" id="optionsGrid">
+      <button class="option-btn" onclick="checkAnswer(0)"></button>
+      <button class="option-btn" onclick="checkAnswer(1)"></button>
+      <button class="option-btn" onclick="checkAnswer(2)"></button>
+      <button class="option-btn" onclick="checkAnswer(3)"></button>
+    </div>
+
+    <div class="controls" style="margin-top: 15px;">
+      <button class="btn-next" id="nextBtn" onclick="nextQuestion()">次の問題へ ➔</button>
     </div>
   </div>
 
-  <div class="options-grid" id="optionsGrid">
-    <button class="option-btn" onclick="checkAnswer(0)"></button>
-    <button class="option-btn" onclick="checkAnswer(1)"></button>
-    <button class="option-btn" onclick="checkAnswer(2)"></button>
-    <button class="option-btn" onclick="checkAnswer(3)"></button>
-  </div>
+  <!-- 採点表（結果表示）画面 -->
+  <div id="resultScreen" class="result-screen">
+    <div class="score-summary">
+      <h2>テスト結果</h2>
+      <div class="score-details" id="finalScore">10問中 8問正解！</div>
+    </div>
 
-  <div class="controls">
-    <button class="btn-next" id="nextBtn" onclick="nextQuestion()">次の問題へ ➔</button>
+    <div class="result-list" id="resultList">
+      <!-- JavaScriptで結果アイテムを追加 -->
+    </div>
+
+    <button class="btn-restart" onclick="restartTest()">もう一度チャレンジ</button>
   </div>
 </div>
 
@@ -306,15 +392,12 @@ const AudioCtx = window.AudioContext || window.webkitAudioContext;
 let audioCtx;
 
 function initAudio() {
-  if (!audioCtx) {
-    audioCtx = new AudioCtx();
-  }
+  if (!audioCtx) audioCtx = new AudioCtx();
 }
 
-// 楽しい正解音（ファンファーレ風アルペジオ）
 function playCorrectSound() {
   initAudio();
-  const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+  const notes = [523.25, 659.25, 783.99, 1046.50];
   notes.forEach((freq, idx) => {
     const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
@@ -329,7 +412,6 @@ function playCorrectSound() {
   });
 }
 
-// コミカルな不正解音（マヌケなピッチダウン音）
 function playWrongSound() {
   initAudio();
   const osc = audioCtx.createOscillator();
@@ -337,28 +419,23 @@ function playWrongSound() {
   osc.type = 'sawtooth';
   osc.frequency.setValueAtTime(280, audioCtx.currentTime);
   osc.frequency.exponentialRampToValueAtTime(80, audioCtx.currentTime + 0.4);
-  
   gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
   gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.4);
-  
   osc.connect(gain);
   gain.connect(audioCtx.destination);
   osc.start();
   osc.stop(audioCtx.currentTime + 0.4);
 }
 
-// ひらめきヒント音（ピコーン♪）
 function playHintSound() {
   initAudio();
   const osc = audioCtx.createOscillator();
   const gain = audioCtx.createGain();
   osc.type = 'sine';
-  osc.frequency.setValueAtTime(880, audioCtx.currentTime); // A5
-  osc.frequency.setValueAtTime(1760, audioCtx.currentTime + 0.1); // A6
-  
+  osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+  osc.frequency.setValueAtTime(1760, audioCtx.currentTime + 0.1);
   gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
   gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
-  
   osc.connect(gain);
   gain.connect(audioCtx.destination);
   osc.start();
@@ -376,77 +453,81 @@ const svgIcons = {
   global: `<svg viewBox="0 0 64 64"><circle fill="none" stroke="#10b981" stroke-width="4" cx="32" cy="32" r="24"/><path fill="none" stroke="#10b981" stroke-width="4" d="M8 32h48M32 8a30 30 0 0 1 0 48M32 8a30 30 0 0 0 0 48"/></svg>`,
   protect: `<svg viewBox="0 0 64 64"><path fill="#10b981" d="M32 6L8 16v16c0 16 10 26 24 30 14-4 24-14 24-30V16z"/></svg>`,
   economy: `<svg viewBox="0 0 64 64"><path fill="none" stroke="#f59e0b" stroke-width="6" stroke-linecap="round" d="M8 48l16-16 12 12 20-24M56 20v12M56 20H44"/></svg>`,
-  create: `<svg viewBox="0 0 64 64"><path fill="#ec4899" d="M32 8l6 18h18l-14 11 5 19-15-11-15 11 5-19-14-11h18z"/></svg>`,
-  explore: `<svg viewBox="0 0 64 64"><circle fill="none" stroke="#6366f1" stroke-width="4" cx="32" cy="32" r="26"/><path fill="#ef4444" d="M44 20l-8 20-16 4 8-20z"/></svg>`,
   sustainable: `<svg viewBox="0 0 64 64"><path fill="none" stroke="#10b981" stroke-width="5" stroke-linecap="round" d="M48 20A20 20 0 1 0 52 36M52 16v12H40"/></svg>`,
   innovative: `<svg viewBox="0 0 64 64"><path fill="#f59e0b" d="M32 6a18 18 0 0 0-10 33v7h20v-7A18 18 0 0 0 32 6zM22 52h20v4H22z"/></svg>`
 };
 
-// 学年別英単語データベース
+// 学年別英単語データベース（10問ずつ構成）
 const wordDatabase = {
   jh1: [
     { word: "apple", options: ["りんご", "みかん", "バナナ", "ぶどう"], answer: 0, hint: "apple", hintText: "赤い果物" },
     { word: "book", options: ["ペン", "本", "机", "鞄"], answer: 1, hint: "book", hintText: "読むもの" },
     { word: "run", options: ["歩く", "泳ぐ", "走る", "飛ぶ"], answer: 2, hint: "run", hintText: "足を早く動かす" },
-    { word: "happy", options: ["悲しい", "怒った", "眠い", "幸せな"], answer: 3, hint: "happy", hintText: "笑顔になる気持ち" }
-  ],
-  jh2: [
-    { word: "study", options: ["勉強する", "遊ぶ", "料理する", "歌う"], answer: 0, hint: "study", hintText: "机に向かって知識を得る" },
-    { word: "future", options: ["過去", "未来", "現在", "昨日"], answer: 1, hint: "future", hintText: "これから来る時間" },
-    { word: "popular", options: ["静かな", "人気のある", "暗い", "古い"], answer: 1, hint: "happy", hintText: "みんなに愛される" }
-  ],
-  jh3: [
-    { word: "protect", options: ["破壊する", "無視する", "保護する", "攻撃する"], answer: 2, hint: "protect", hintText: "危険から守る" },
-    { word: "global", options: ["地元の", "地球規模の", "小さな", "個人的な"], answer: 1, hint: "global", hintText: "世界全体にかかわる" },
-    { word: "create", options: ["創造する", "壊す", "買う", "捨てる"], answer: 0, hint: "create", hintText: "新しく作り出す" }
-  ],
-  hs1: [
-    { word: "economy", options: ["生態系", "経済", "地理", "政治"], answer: 1, hint: "economy", hintText: "お金やモノの流れ" },
-    { word: "explore", options: ["探検する", "説明する", "無視する", "輸出する"], answer: 0, hint: "explore", hintText: "未知の場所を調べる" },
-    { word: "influence", options: ["影響", "結果", "原因", "比較"], answer: 0, hint: "study", hintText: "他者に与える力" }
+    { word: "happy", options: ["悲しい", "怒った", "眠い", "幸せな"], answer: 3, hint: "happy", hintText: "笑顔になる気持ち" },
+    { word: "desk", options: ["机", "椅子", "窓", "ドア"], answer: 0, hint: "book", hintText: "勉強する台" },
+    { word: "cat", options: ["犬", "猫", "鳥", "魚"], answer: 1, hint: "happy", hintText: "ニャーと鳴く動物" },
+    { word: "sing", options: ["話す", "書く", "歌う", "聞く"], answer: 2, hint: "happy", hintText: "声で音楽を奏でる" },
+    { word: "water", options: ["水", "牛乳", "お茶", "ジュース"], answer: 0, hint: "global", hintText: "飲む透明な液体" },
+    { word: "friend", options: ["先生", "友達", "家族", "生徒"], answer: 1, hint: "happy", hintText: "仲の良い人" },
+    { word: "school", options: ["病院", "公園", "学校", "駅"], answer: 2, hint: "study", hintText: "勉強しに通う場所" }
   ],
   hs2: [
     { word: "sustainable", options: ["一時の", "危険な", "持続可能な", "急速な"], answer: 2, hint: "sustainable", hintText: "環境を保ち維持できる" },
     { word: "innovative", options: ["革新的な", "伝統的な", "退屈な", "複雑な"], answer: 0, hint: "innovative", hintText: "新しいアイデアに満ちた" },
-    { word: "contribute", options: ["無視する", "貢献する", "対立する", "減少する"], answer: 1, hint: "create", hintText: "役に立つために力を差し出す" },
-    { word: "crucial", options: ["極めて重要な", "些細な", "危険な", "曖昧な"], answer: 0, hint: "protect", hintText: "決定的に大切な" }
-  ],
-  hs3: [
-    { word: "abundant", options: ["乏しい", "豊富な", "急激な", "明確な"], answer: 1, hint: "create", hintText: "たくさんある様子" },
-    { word: "inevitable", options: ["避けられない", "偶然の", "望ましい", "不確かな"], answer: 0, hint: "future", hintText: "必ず起こる" },
-    { word: "reluctant", options: ["気乗りしない", "熱心な", "勇敢な", "素早い"], answer: 0, hint: "study", hintText: "乗り気ではない" }
+    { word: "contribute", options: ["無視する", "貢献する", "対立する", "減少する"], answer: 1, hint: "protect", hintText: "役に立つために力を差し出す" },
+    { word: "crucial", options: ["極めて重要な", "些細な", "危険な", "曖昧な"], answer: 0, hint: "protect", hintText: "決定的に大切な" },
+    { word: "acquire", options: ["手に入れる", "失う", "延期する", "避ける"], answer: 0, hint: "book", hintText: "努力して獲得する" },
+    { word: "perspective", options: ["距離", "視点・考え方", "感情", "目標"], answer: 1, hint: "future", hintText: "物事の見方" },
+    { word: "subsequent", options: ["以前の", "その後の", "同時期の", "永遠の"], answer: 1, hint: "future", hintText: "次に起こる" },
+    { word: "fundamental", options: ["基本的な", "応用的な", "一時的な", "例外的な"], answer: 0, hint: "study", hintText: "根底にある土台" },
+    { word: "significant", options: ["重大な", "小さな", "無意味な", "偶然の"], answer: 0, hint: "innovative", hintText: "大きな意味を持つ" },
+    { word: "diversity", options: ["統一", "多様性", "孤独", "競争"], answer: 1, hint: "global", hintText: "さまざまな違いがあること" }
   ]
 };
 
+// 不足レベル用バックアップ（高校2年相当）
+wordDatabase.jh2 = wordDatabase.hs2;
+wordDatabase.jh3 = wordDatabase.hs2;
+wordDatabase.hs1 = wordDatabase.hs2;
+wordDatabase.hs3 = wordDatabase.hs2;
+
 let currentLevel = 'hs2';
+let testQuestions = [];
 let currentQuestionIndex = 0;
-let score = 0;
-let streak = 0;
+let correctCount = 0;
+let userAnswers = []; // テスト結果保存用
 let timerInterval;
 let timeLeft = 5;
 let answered = false;
 
 function changeLevel() {
   currentLevel = document.getElementById("levelSelect").value;
-  score = 0;
-  streak = 0;
-  updateStats();
-  nextQuestion();
+  startTest();
 }
 
-function updateStats() {
-  document.getElementById("score").innerText = score;
-  document.getElementById("streak").innerText = streak;
+function startTest() {
+  // 指定学年の全問題を取得してシャッフルし、10問を抽出
+  const pool = [...wordDatabase[currentLevel]];
+  testQuestions = pool.sort(() => Math.random() - 0.5).slice(0, 10);
+  
+  currentQuestionIndex = 0;
+  correctCount = 0;
+  userAnswers = [];
+
+  document.getElementById("quizScreen").style.display = "block";
+  document.getElementById("resultScreen").style.display = "none";
+
+  loadQuestion();
 }
 
 function loadQuestion() {
   answered = false;
   document.getElementById("nextBtn").style.display = "none";
   
-  const list = wordDatabase[currentLevel];
-  currentQuestionIndex = Math.floor(Math.random() * list.length);
-  const q = list[currentQuestionIndex];
+  const q = testQuestions[currentQuestionIndex];
 
+  document.getElementById("progressText").innerText = `${currentQuestionIndex + 1} / 10`;
+  document.getElementById("scoreText").innerText = correctCount;
   document.getElementById("wordTitle").innerText = q.word;
 
   const buttons = document.querySelectorAll(".option-btn");
@@ -456,7 +537,6 @@ function loadQuestion() {
     btn.disabled = false;
   });
 
-  // ヒント表示の初期化（タイマーセット）
   resetHintTimer(q);
 }
 
@@ -476,7 +556,6 @@ function resetHintTimer(q) {
     timeLeft--;
     document.getElementById("timerText").innerText = timeLeft;
     
-    // 円形メーターのアニメーション
     const offset = circumference - (timeLeft / 5) * circumference;
     circle.style.strokeDashoffset = offset;
 
@@ -495,9 +574,7 @@ function showHint(q) {
   document.getElementById("hintSvg").innerHTML = svgContent;
   document.getElementById("hintCaption").innerText = q.hintText;
 
-  if (!answered) {
-    playHintSound();
-  }
+  if (!answered) playHintSound();
 }
 
 function checkAnswer(selectedIndex) {
@@ -505,33 +582,81 @@ function checkAnswer(selectedIndex) {
   answered = true;
   clearInterval(timerInterval);
 
-  const q = wordDatabase[currentLevel][currentQuestionIndex];
+  const q = testQuestions[currentQuestionIndex];
   const buttons = document.querySelectorAll(".option-btn");
+  const isCorrect = selectedIndex === q.answer;
 
   buttons.forEach(btn => btn.disabled = true);
 
-  if (selectedIndex === q.answer) {
+  if (isCorrect) {
     buttons[selectedIndex].classList.add("correct");
     playCorrectSound();
-    score += 10;
-    streak++;
+    correctCount++;
   } else {
     buttons[selectedIndex].classList.add("wrong");
     buttons[q.answer].classList.add("correct");
     playWrongSound();
-    streak = 0;
   }
 
-  updateStats();
-  document.getElementById("nextBtn").style.display = "block";
+  // 採点用に結果を記憶
+  userAnswers.push({
+    word: q.word,
+    correctAnswer: q.options[q.answer],
+    userAnswer: q.options[selectedIndex],
+    isCorrect: isCorrect
+  });
+
+  document.getElementById("scoreText").innerText = correctCount;
+  
+  const nextBtn = document.getElementById("nextBtn");
+  if (currentQuestionIndex < 9) {
+    nextBtn.innerText = "次の問題へ ➔";
+  } else {
+    nextBtn.innerText = "結果を見る ➔";
+  }
+  nextBtn.style.display = "block";
 }
 
 function nextQuestion() {
-  loadQuestion();
+  currentQuestionIndex++;
+  if (currentQuestionIndex < 10) {
+    loadQuestion();
+  } else {
+    showResults();
+  }
 }
 
-// 初回起動
-loadQuestion();
+function showResults() {
+  document.getElementById("quizScreen").style.display = "none";
+  document.getElementById("resultScreen").style.display = "flex";
+
+  document.getElementById("finalScore").innerText = `10問中 ${correctCount}問 正解！`;
+
+  const listContainer = document.getElementById("resultList");
+  listContainer.innerHTML = "";
+
+  userAnswers.forEach((res, idx) => {
+    const item = document.createElement("div");
+    item.className = `result-item ${res.isCorrect ? 'is-correct' : 'is-wrong'}`;
+    item.innerHTML = `
+      <div>
+        <span class="result-word">${idx + 1}. ${res.word}</span>
+        <div style="font-size:0.8rem; color:#6b7280;">正解: ${res.correctAnswer}</div>
+      </div>
+      <div class="result-mark" style="color: ${res.isCorrect ? 'var(--accent-green)' : 'var(--accent-red)'}">
+        ${res.isCorrect ? '〇 正解' : '✕ 不正解'}
+      </div>
+    `;
+    listContainer.appendChild(item);
+  });
+}
+
+function restartTest() {
+  startTest();
+}
+
+// 初期化
+startTest();
 </script>
 </body>
 </html>
