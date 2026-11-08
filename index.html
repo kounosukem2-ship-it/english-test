@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>英単語マスター - リアルヒント画像＆発音表示版</title>
+  <title>英単語マスター - iOS音声完全対応版</title>
   <style>
     :root {
       --primary: #4f46e5;
@@ -393,9 +393,24 @@
 <script>
 const AudioCtx = window.AudioContext || window.webkitAudioContext;
 let audioCtx;
+let isAudioUnlocked = false;
 
+// iOS向けWeb Audio APIアンロック処理
 function initAudio() {
-  if (!audioCtx) audioCtx = new AudioCtx();
+  if (!audioCtx) {
+    audioCtx = new AudioCtx();
+  }
+  if (audioCtx.state === 'suspended') {
+    audioCtx.resume();
+  }
+  if (!isAudioUnlocked) {
+    const buffer = audioCtx.createBuffer(1, 1, 22050);
+    const source = audioCtx.createBufferSource();
+    source.buffer = buffer;
+    source.connect(audioCtx.destination);
+    source.start(0);
+    isAudioUnlocked = true;
+  }
 }
 
 function playCorrectSound() {
@@ -445,7 +460,7 @@ function playHintSound() {
   osc.stop(audioCtx.currentTime + 0.3);
 }
 
-// 学年別英単語データベース（カタカナ読み & 画像検索キーワード付き）
+// 学年別英単語データベース
 const wordDatabase = {
   jh1: [
     { word: "apple", reading: "アップル", options: ["りんご", "みかん", "バナナ", "ぶどう"], answer: 0, img: "https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=300", hintText: "赤い果物" },
@@ -467,13 +482,12 @@ const wordDatabase = {
     { word: "acquire", reading: "アクワイア", options: ["手に入れる", "失う", "延期する", "避ける"], answer: 0, img: "https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?w=300", hintText: "知識や資格を努力して自分のものにする" },
     { word: "perspective", reading: "パースペクティブ", options: ["距離", "視点・考え方", "感情", "目標"], answer: 1, img: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=300", hintText: "物事を見つめる様々な角度・視野" },
     { word: "subsequent", reading: "サブシクウェント", options: ["以前の", "その後の", "同時期の", "永遠の"], answer: 1, img: "https://images.unsplash.com/photo-1501139083538-0139583c060f?w=300", hintText: "時間が経過して次に起こる" },
-    { word: "fundamental", reading: "ファンダメンタル", options: ["基本的な", "応用的な", "一時的な", "例外的な"], answer: 0, hint: "https://images.unsplash.com/photo-1513542789411-b6a5d4f31634?w=300", hintText: "全体の土台となる最も根幹の" },
+    { word: "fundamental", reading: "ファンダメンタル", options: ["基本的な", "応用的な", "一時的な", "例外的な"], answer: 0, img: "https://images.unsplash.com/photo-1513542789411-b6a5d4f31634?w=300", hintText: "全体の土台となる最も根幹の" },
     { word: "significant", reading: "シグニフィカント", options: ["重大な", "小さな", "無意味な", "偶然の"], answer: 0, img: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=300", hintText: "大きなインパクトと影響を与える" },
     { word: "diversity", reading: "ダイバーシティ", options: ["統一", "多様性", "孤独", "競争"], answer: 1, img: "https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=300", hintText: "多様な人種や個性が共存すること" }
   ]
 };
 
-// 不足レベル用補完
 wordDatabase.jh2 = wordDatabase.hs2;
 wordDatabase.jh3 = wordDatabase.hs2;
 wordDatabase.hs1 = wordDatabase.hs2;
@@ -570,6 +584,8 @@ function showHint(q) {
 }
 
 function checkAnswer(selectedIndex) {
+  initAudio(); // ユーザーのタップ時に確実にオーディオをアンロック
+  
   if (answered) return;
   answered = true;
   clearInterval(timerInterval);
